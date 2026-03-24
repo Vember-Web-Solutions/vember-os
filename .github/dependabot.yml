@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # 1. Watch Python dependencies (Textual, Rich, Cryptography)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # 2. Watch Docker dependencies (Postgres, Django, Redis images)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
