@@ -38,18 +38,26 @@ class VemberCore:
 			self.is_running = False 
 
 	def _update_system_state(self):
-		"""Fetches real-time node data from Docker."""
-		nodes = self.node_manager.get_node_status()
-		self.state["nodes"] = nodes
-		self.state["status"] = "NODES SYNCED"
+			"""Fetches nodes from Docker AND internal Vember apps."""
+			# 1. Real Docker Nodes
+			nodes = self.node_manager.get_node_status()
+			
+			# 2. Mock Vember Vector (The Finance Node)
+			nodes.append({"name": "Vember-Vector", "state": "STANDBY"})
+			
+			self.state["nodes"] = nodes
+			self.state["status"] = "ECOSYSTEM SYNCED"
 
 	def _render_frame(self):
-		"""Passes the current state to Windfall and PRINTS to terminal."""
-		# 1. Ask Windfall to compose the header
-		output = self.engine.draw_component("header", self.state)
-		
-		# 2. Physically send it to the terminal
-		print(output)
+		"""Passes the full ecosystem state to Windfall."""
+		# 1. Draw the OS Header
+		header = self.engine.draw_component("header", self.state)
+		print(header)
+
+		# 2. Draw the Node Grid (Docker + Finance + Future Apps)
+		if "nodes" in self.state:
+			grid = self.engine.draw_component("node_grid", self.state)
+			print(grid)
 
 def run():
 	"""Package entry point for the 'vember' command."""

@@ -51,3 +51,22 @@ class TUIBackend:
 		footer = f"{b[4]}{'─' * (width - 2)}{b[5]}"
 		
 		return f"{header}\n{body}\n{footer}"
+	
+	def render_node_grid(self, nodes: list) -> str:
+		"""
+		Iterates through the ecosystem nodes and renders 
+		individual Windfall boxes for each.
+		"""
+		grid_output = ""
+		for node in nodes:
+			name = node.get("name", "Unknown")
+			state = node.get("state", "OFFLINE")
+			
+			# Rendering a more compact box for nodes
+			grid_output += self.render_box(
+				title=f"NODE: {name}", 
+				content=f"STATE: {state}",
+				width=35
+			) + "\n"
+			
+		return grid_output
