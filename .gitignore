@@ -1,0 +1,54 @@
+# ==============================================================================
+# VEMBER-OS PROJECT FOUNDATION
+# Organization: Vember Web Solutions (DBA)
+# Architecture: Ultra-Flat Ncurses + UV + Local AI
+# ==============================================================================
+
+# --- [ 1. PYTHON CORE ] ---
+# Ignore compiled bytecode that clutters the repo
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# --- [ 2. UV & ENVIRONMENTS ] ---
+# Ignore the virtual environment (managed by 'uv')
+.venv/
+.uv/
+
+# IMPORTANT: We DO NOT ignore 'uv.lock' for an OS/Application.
+# Tracking 'uv.lock' ensures everyone gets the exact same "Iron Triangle"
+# environment. If this were a simple library, we might ignore it.
+# !uv.lock 
+
+# --- [ 3. LOCAL AI & DATA VAULT ] ---
+# This is the most critical section for your privacy.
+# It ensures your personal AI conversations and local databases never leak.
+data/
+*.log
+*.db
+*.sqlite
+*.json
+
+# --- [ 4. NCURSES & TERMINAL ] ---
+# Ignore terminal-specific artifacts or retype files
+.retype/
+.term_history
+.bash_history
+.zsh_history
+
+# --- [ 5. IDE & SYSTEM ] ---
+# Ignore editor-specific bloat
+.vscode/
+.idea/
+.cursor/
+.DS_Store
+Thumbs.db
+
+# --- [ 6. OPERATOR PRIVACY ] ---
+# Use this if you want to keep some automation scripts strictly local.
+# Any file in 'ops/' starting with 'private_' will be ignored.
+ops/private_*
+.env
+.envrc
