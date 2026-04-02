@@ -1,12 +1,18 @@
 # 🔱 VEMBER-OS
-**The Ultra-Flat, Node-Based Automation Hub**
+> **The Node-Based Automation Ecosystem**
 
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue?style=for-the-badge&logo=python)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)
 ![E2EE](https://img.shields.io/badge/Security-E2EE_Encrypted-blueviolet?style=for-the-badge)
 ![Version](https://img.shields.io/badge/version-0.1.1a0-orange?style=for-the-badge)
 
-Vember-OS is a lightweight, containerized operating environment designed to scan, manage, and execute Python-based automation nodes. Built with a focus on security and high-performance terminal interfaces, it provides a "Single Pane of Glass" for your automation scripts.
+Vember-OS is a secure, containerized environment built for high-stakes automation. 
+By decoupling logic from presentation, Vember-OS utilizes the **Windfall Compositor** to provide a responsive, theme-aware interface across TUI, 2D, and eventually 3D environments.
+
+### 🧩 Core Architecture
+- **The Brain:** Docker-orchestrated Node-Registry (Python 3.13)
+- **The Face:** Windfall Tri-Render Engine (Internal v1.0.0)
+- **The Vault:** Hybrid Cryptographic Authentication
 
 ---
 
