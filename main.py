@@ -1,125 +1,109 @@
 import curses
 import time
-from io import StringIO
-
-# Resolved Rich Imports
-from rich.console import Console
-from rich.panel import Panel
-from rich.layout import Layout
-from rich.table import Table
-
+from windfall import Windfall
 from core import NodeScanner
+from branding import THEMES, LOGO_ANSI
 
 class VemberDashboard:
-	def __init__(self):
-		self.scanner = NodeScanner()
-		
-		self.console = Console(
-			file=StringIO(), 
-			force_terminal=True, 
-			width=100, 
-			color_system=None, # Strips ANSI colors
-			safe_box=True      # Uses simpler box characters for better compatibility
-		)
+    def __init__(self):
+        self.scanner = NodeScanner()
+        # Initialize the Compositor with our default theme
+        self.windfall = Windfall(theme_key="VEMBER_DARK")
+        
+        self.selected_index = 0
+        self.running = True
+        self.nodes = []
 
-		self.selected_index = 0
-		self.running = True
-		self.nodes = []
+    def show_splash(self, stdscr):
+        """Initial Boot Sequence (Point 7 of Checklist)"""
+        stdscr.erase()
+        h, w = stdscr.getmaxyx()
+        
+        # Simple center-screen splash using branding assets
+        logo_lines = LOGO_ANSI.splitlines()
+        start_y = (h // 2) - (len(logo_lines) // 2)
+        
+        for i, line in enumerate(logo_lines):
+            if start_y + i < h:
+                stdscr.addstr(start_y + i, (w // 2) - (len(line) // 2), line)
+        
+        stdscr.refresh()
+        time.sleep(1.5) # Let the brand sink in
 
-	def update_logic(self, key):
-		"""Handles input and state changes."""
-		self.nodes = self.scanner.scan()
-		num_nodes = len(self.nodes)
+    def update_logic(self, key):
+        """Pure Logic: No Rendering allowed here."""
+        self.nodes = self.scanner.scan()
+        num_nodes = len(self.nodes)
 
-		if key == ord('q'):
-			self.running = False
-		elif key == ord('r'):
-			self.selected_index = 0  # Reset on refresh
-		elif key == curses.KEY_UP and self.selected_index > 0:
-			self.selected_index -= 1
-		elif key == curses.KEY_DOWN and self.selected_index < num_nodes - 1:
-			self.selected_index += 1
-		elif key in (curses.KEY_ENTER, 10, 13):
-			# Placeholder for execution logic
-			pass
+        if key == ord('q'):
+            self.running = False
+        # Toggles handled by the OS, passed to Windfall (Point 2)
+        elif key == curses.KEY_F1:
+            self.windfall.toggle_sidebar()
+        elif key == curses.KEY_F2:
+            self.windfall.toggle_inspector()
+        elif key == curses.KEY_UP and self.selected_index > 0:
+            self.selected_index -= 1
+        elif key == curses.KEY_DOWN and self.selected_index < num_nodes - 1:
+            self.selected_index += 1
 
-	def build_render_tree(self):
-		"""Constructs the Rich layout object."""
-		layout = Layout()
-		layout.split_column(
-			Layout(name="header", size=3),
-			Layout(name="body"),
-			Layout(name="footer", size=3)
-		)
-		layout["body"].split_row(
-			Layout(name="sidebar", ratio=1),
-			Layout(name="inspector", ratio=2)
-		)
+    def _get_sidebar_content(self):
+        """Component for Windfall: Formats the node list."""
+        content = ""
+        for i, node in enumerate(self.nodes):
+            prefix = "▶ " if i == self.selected_index else "  "
+            line = f"{prefix}{node['display_name']}"
+            if i == self.selected_index:
+                content += f"[bold cyan]{line}[/]\n"
+            else:
+                content += f"{line}\n"
+        return content
 
-		# Header
-		layout["header"].update(Panel(
-			"[bold cyan]🔱 VEMBER-OS v0.1.0[/] | [green]ENVIRONMENT: DOCKER/PY3.13[/]", 
-			border_style="blue"
-		))
+    def _get_inspector_content(self):
+        """Component for Windfall: Formats node details."""
+        if not self.nodes:
+            return "[dim]Scanning /ops...[/]"
+        curr = self.nodes[self.selected_index]
+        return f"[yellow]ID:[/] {curr['id']}\n[yellow]SRC:[/] {curr['path']}\n\n{curr['description']}"
 
-		# Sidebar
-		node_table = Table(show_header=False, box=None, expand=True)
-		for i, node in enumerate(self.nodes):
-			style = "bold reverse cyan" if i == self.selected_index else "white"
-			prefix = "▶ " if i == self.selected_index else "  "
-			node_table.add_row(f"[{style}]{prefix}{node['display_name']}[/]")
-		
-		layout["sidebar"].update(Panel(node_table, title="[magenta]NODES[/]", border_style="blue"))
+    def _get_footer_content(self):
+        """Component for Windfall: Keybind help."""
+        return "[dim]ARROWS Navigate | ENTER Run | F1 Sidebar | F2 Inspector | Q Quit[/]"
 
-		# Inspector
-		if self.nodes:
-			curr = self.nodes[self.selected_index]
-			detail = f"[bold yellow]ID:[/] {curr['id']}\n[bold yellow]SRC:[/] {curr['path']}\n\n[white]{curr['description']}[/]"
-			layout["inspector"].update(Panel(detail, title=f"[white]{curr['display_name']}[/]", border_style="cyan"))
-		else:
-			layout["inspector"].update(Panel("[dim]Scanning /ops...[/]"))
+    def run(self, stdscr):
+        """The Main Ncurses Loop."""
+        self.show_splash(stdscr) # Point 7: Boot Sequence
+        
+        curses.curs_set(0)
+        stdscr.nodelay(True)
+        stdscr.keypad(True)
 
-		# Footer
-		layout["footer"].update(Panel("[dim]ARROWS Navigate | ENTER Run | R Rescan | Q Shutdown[/]", border_style="blue"))
-		
-		return layout
+        while self.running:
+            # 1. Update State & Dimensions (Point 6: Responsive)
+            key = stdscr.getch()
+            self.update_logic(key)
+            h, w = stdscr.getmaxyx()
 
-	def run(self, stdscr):
-		"""The Main Ncurses Loop."""
-		curses.curs_set(0)
-		stdscr.nodelay(True)
-		stdscr.keypad(True)
+            # 2. Compose the Frame (Point 3: Frame-based Rendering)
+            # We pass callables so Windfall only runs them if the panel is visible
+            frame = self.windfall.compose(w, h, {
+                "sidebar": self._get_sidebar_content,
+                "inspector": self._get_inspector_content,
+                "footer": self._get_footer_content
+            })
+            
+            # 3. Paint the Compositor Output
+            stdscr.erase()
+            try:
+                for y, line in enumerate(frame.splitlines()):
+                    if y < h:
+                        stdscr.addstr(y, 0, line.rstrip()[:w-1])
+            except curses.error:
+                pass
 
-		# Explicitly check for color support
-		if curses.has_colors():
-			curses.start_color()
-			curses.use_default_colors()
-
-		while self.running:
-			
-			# 1. Update State
-			key = stdscr.getch()
-			self.update_logic(key)
-
-			# 2. Render to String
-			self.console.file = StringIO() # Clear the previous frame buffer
-			render_tree = self.build_render_tree()
-			self.console.print(render_tree)
-			full_output = self.console.file.getvalue()
-			
-			# 3. Precise Ncurses Painting
-			stdscr.erase() # Wipe the slate
-			try:
-				# Loop through the rendered lines and place them manually
-				for y, line in enumerate(full_output.splitlines()):
-					if y < curses.LINES - 1: # Prevent crashing on small windows
-						stdscr.addstr(y, 0, line[:curses.COLS - 1])
-			except curses.error:
-				pass
-
-			stdscr.refresh()
-			time.sleep(0.05)
+            stdscr.refresh()
+            time.sleep(0.05)
 
 if __name__ == "__main__":
-	app = VemberDashboard()
-	curses.wrapper(app.run)
+    app = VemberDashboard()
+    curses.wrapper(app.run)
