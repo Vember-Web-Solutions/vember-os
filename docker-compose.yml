@@ -1,0 +1,18 @@
+services:
+  vember-os:
+    build: .
+    container_name: vember_hub
+    stdin_open: true 
+    tty: true        
+    # 'Host' networking allows Vember-OS to manage local services
+    # (Like your AI models or web servers) directly.
+    network_mode: "host"
+    volumes:
+      - ./vember:/app/vember:ro
+      - ./ops:/app/ops
+      - ./data:/app/data
+      # SCOPE: This allows the OS to see host processes (Optional/Powerful)
+      - /proc:/host/proc:ro
+    environment:
+      - VEMBER_ENV=production
+      - PYTHONBREAKPOINT=ipdb.set_trace
