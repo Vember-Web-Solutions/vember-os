@@ -17,6 +17,7 @@ WORKDIR /app
 # Enable colors for the Vember-OS UI
 ENV TERM=xterm-256color
 ENV PYTHONUNBUFFERED=1
+ENV UV_LINK_MODE=copy
 
 # Copy & Sync (Tracking the lockfile for the "Iron Triangle")
 COPY pyproject.toml uv.lock README.md ./
