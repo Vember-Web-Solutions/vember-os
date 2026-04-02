@@ -19,10 +19,10 @@ ENV TERM=xterm-256color
 ENV PYTHONUNBUFFERED=1
 
 # Copy & Sync (Tracking the lockfile for the "Iron Triangle")
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen
 
 COPY . .
 
 # Launch the Vember Kernel
-CMD ["uv", "run", "python", "vember/main.py"]
+CMD ["uv", "run", "python", "main.py"]
