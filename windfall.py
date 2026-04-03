@@ -68,13 +68,13 @@ class WindfallTUI:
 		sidebar_layout = root.get("sidebar")
 		if sidebar_layout:
 			sidebar_layout.update(
-				Panel(components['sidebar'](), title="[ REGISTRY ]", border_style=self.theme.secondary)
+				Panel(components['sidebar'](), title="[ NODES ]", border_style=self.theme.secondary)
 			)
 
 		inspector_layout = root.get("inspector")
 		if inspector_layout:
 			inspector_layout.update(
-				Panel(components['inspector'](), title="[ INSPECTOR ]", border_style=self.theme.secondary)
+				Panel(components['inspector'](), title="[ INFORMATION ]", border_style=self.theme.secondary)
 			)
 
 		# Footer

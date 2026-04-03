@@ -40,7 +40,7 @@ THEMES = {
 
 # 🔱 ASSET LIBRARY
 LOGO_ANSI = """
-	  🔱  V E M B E R - O S
+	🔱  V E M B E R - O S
   ─────────────────────────────
   [ NODE-BASED ARCHITECTURE ]
 """

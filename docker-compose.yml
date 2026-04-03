@@ -16,3 +16,5 @@ services:
       # Specific Scopes
       - ./ops:/app/ops
       - ./data:/app/data
+      # 🔱 Read-only access to host system sensors
+      - /sys:/sys:ro
