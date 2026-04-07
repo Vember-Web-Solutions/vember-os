@@ -1,133 +1,149 @@
-import curses
+"""
+🔱 VEMBER-OS CORE DASHBOARD (v1.0.5 Patch)
+The Primary Control Interface for the Node-Based Architecture.
+Refactored for Native Input Kernel and Single-Drain Telemetry.
+"""
+
 import time
+from rich.live import Live
+from rich.console import Console
 from windfall import Windfall
 from core import NodeScanner
 from runner import NodeRunner
-from branding import THEMES, LOGO_ANSI
+from input_handler import KeyListener
 
 class VemberDashboard:
 	def __init__(self):
 		self.scanner = NodeScanner()
 		self.windfall = Windfall(theme_key="VEMBER_DARK")
-		self.runner = NodeRunner()
+		self.windfall.toggle_sidebar = True 
 		
+		self.runner = NodeRunner()
+		self.console = Console()
+		self.keyboard = KeyListener() 
+
 		self.selected_index = 0
 		self.running = True
+		self.viewing_node = False # 🔱 NEW: Track if we are focused on a process
 		self.nodes = []
 		self.output_buffer = ""
 
-	def show_splash(self, stdscr):
-		"""Initial Boot Sequence"""
-		stdscr.erase()
-		h, w = stdscr.getmaxyx()
-		logo_lines = LOGO_ANSI.splitlines()
-		start_y = (h // 2) - (len(logo_lines) // 2)
-		for i, line in enumerate(logo_lines):
-			if start_y + i < h:
-				stdscr.addstr(start_y + i, (w // 2) - (len(line) // 2), line)
-		stdscr.refresh()
-		time.sleep(1.5)
+	def handle_input(self):
+		key = self.keyboard.get_key()
+		if not key: return
+		k = key.lower()
 
-	def update_logic(self, key):
-		"""Handles input and state changes."""
-		self.nodes = self.scanner.scan()
-		num_nodes = len(self.nodes)
+		# 🔱 GLOBAL: Always allow Shutdown
+		if k == "q":
+			self.running = False
+			return
 
-		# 1. Capture Live Output
-		new_output = self.runner.get_latest_output()
-		if new_output:
-			# If the node sends a refresh signal, clear the buffer first
-			if "--- REFRESH ---" in new_output:
-				# Only keep the text AFTER the last refresh signal
-				self.output_buffer = new_output.split("--- REFRESH ---")[-2]
-			else:
-				self.output_buffer += new_output
-
-		# 2. Key Handling
-		if key in (ord('q'), 8, 27): # 27 is ESC
-			if self.runner.is_running:
+		# 🔱 CONTEXT: Inside a Node
+		if self.viewing_node:
+			if k == "\x1b": # ESC: Detach but keep running
+				self.viewing_node = False
+			elif k == "x": # New: Hard Kill process
 				self.runner.stop()
-				self.output_buffer = ""
-			else:
-				self.running = False
-		elif key == curses.KEY_F2:
-			self.windfall.toggle_sidebar()
-		elif key == curses.KEY_F3:
-			self.windfall.toggle_inspector()
-		elif key == curses.KEY_UP and self.selected_index > 0:
-			self.selected_index -= 1
-			self.output_buffer = "" # Clear buffer when switching nodes
-		elif key == curses.KEY_DOWN and self.selected_index < num_nodes - 1:
-			self.selected_index += 1
-			self.output_buffer = "" # Clear buffer when switching nodes
+				self.viewing_node = False
+				self.output_buffer = "[bold red]SIGNAL: Process Terminated.[/]"
+
+		# 🔱 CONTEXT: Main Dashboard
+		else:
+			if k in ["w", "\x1b[a"]: # Up
+				if self.selected_index > 0:
+					self.selected_index -= 1
+			elif k in ["s", "\x1b[b"]: # Down
+				if self.selected_index < len(self.nodes) - 1:
+					self.selected_index += 1
+			elif k in ["\n", "\r"]: # Enter
+				self.viewing_node = True
+				# Only execute if NOT already running
+				if not self.runner.is_running:
+					self.output_buffer = ""
+					curr_node = self.nodes[self.selected_index]
+					self.runner.execute(curr_node['path'])
+				
+	def update_logic(self):
+		"""Single-Drain Telemetry Sync."""
+		self.nodes = self.scanner.scan()
 		
-		# 🔱 TRIGGER EXECUTION
-		elif key in (curses.KEY_ENTER, 10, 13):
-			if self.nodes and not self.runner.is_running:
-				self.output_buffer = "🚀 Launching Node...\n"
-				curr_node = self.nodes[self.selected_index]
-				self.runner.execute(curr_node['path'])
+		# Pull everything currently in the pipe
+		new_output = self.runner.get_latest_output()
+		if not new_output:
+			return
+
+		if "--- REFRESH ---" in new_output:
+			# Overwrite buffer with the most recent full frame
+			parts = new_output.split("--- REFRESH ---")
+			if len(parts) > 1:
+				self.output_buffer = parts[-2].strip()
+		else:
+			# Append standard scrolling logs
+			self.output_buffer += new_output
 
 	def _get_sidebar_content(self):
 		content = ""
 		for i, node in enumerate(self.nodes):
 			prefix = "▶ " if i == self.selected_index else "  "
 			if i == self.selected_index:
-				# 🔱 Use the clean 'name' key we just created in core.py
 				content += f"[bold cyan]{prefix}{node['name']}[/]\n"
 			else:
 				content += f"{prefix}{node['name']}\n"
 		return content
 
-	def _get_inspector_content(self):
-		if not self.nodes:
-			return "[dim]Scanning Registry...[/]"
+	def _get_viewport_content(self):
+		if self.viewing_node:
+			return self.output_buffer
 		
-		curr = self.nodes[self.selected_index]
-		
-		# 🔱 Clean Sections: Header (Name) + Body (Description)
-		header = (
-			f"[bold cyan]🔱 {curr['name']}[/]\n"
-			f"[dim]{curr['description']}[/]\n"
-			f"[dim]{'—' * 45}[/]\n"
-		)
-
-		if self.runner.is_running:
-			return f"{header}[bold green]● LIVE TELEMETRY[/]\n\n{self.output_buffer}"
-		
-		return f"{header}\n[dim]Press ENTER to initialize...[/]"
+		status = "[bold cyan]Active in Background[/]" if self.runner.is_running else "Idle"
+		return f"[dim]DASHBOARD MODE[/]\n[white]System Status: {status}[/]\n\nPress ENTER to focus view."
 
 	def _get_footer_content(self):
-		return "[dim]ARROWS Navigate | ENTER Run | F2 Sidebar | F3 Inspector | Q Quit[/]"
+		if self.viewing_node:
+			return "[bold cyan]VIEWING NODE[/] | ESC Detach (Keep Running) | X Kill Process | Q Shutdown"
+		
+		nav = "W/S Navigate | ENTER Focus/Run | Q Shutdown"
+		if self.runner.is_running:
+			return f"[bold green]NODE ACTIVE[/] | {nav}"
+		return f"[dim]{nav}[/]"
 
-	def run(self, stdscr):
-		self.show_splash(stdscr)
-		curses.curs_set(0)
-		stdscr.nodelay(True)
-		stdscr.keypad(True)
+	def run(self):
+		"""The Main Render Loop using Rich.Live."""
+		components = {
+			"sidebar": self._get_sidebar_content,
+			"viewport": self._get_viewport_content,
+			"footer": self._get_footer_content
+		}
 
-		while self.running:
-			key = stdscr.getch()
-			self.update_logic(key)
-			h, w = stdscr.getmaxyx()
+		try:
+			with Live(
+				self.windfall.compose(components), 
+				console=self.console, 
+				screen=True, 
+				auto_refresh=False
+			) as live:
+				
+				while self.running:
+					# 🔱 Synchronous Input Handling
+					self.handle_input()
+					
+					self.update_logic()
+					
+					live.update(self.windfall.compose(components))
+					live.refresh()
+					
+					time.sleep(0.05) 
 
-			frame = self.windfall.compose(w, h, {
-				"sidebar": self._get_sidebar_content,
-				"inspector": self._get_inspector_content,
-				"footer": self._get_footer_content
-			})
+		finally:
+			# 🔱 THE HAND-BACK SEQUENCE
+			# Restores terminal TTY settings before the process exits
+			self.keyboard.stop() 
+			if self.runner.is_running:
+				self.runner.stop()
 			
-			stdscr.erase()
-			try:
-				for y, line in enumerate(frame.splitlines()):
-					if y < h:
-						stdscr.addstr(y, 0, line.rstrip()[:w - 1])
-			except curses.error:
-				pass
-
-			stdscr.refresh()
-			time.sleep(0.05)
+			self.console.clear()
+			print("[VEMBER-OS] Kernel Offline. Terminal Control Restored.")
 
 if __name__ == "__main__":
 	app = VemberDashboard()
-	curses.wrapper(app.run)
+	app.run()
