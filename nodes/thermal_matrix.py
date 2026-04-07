@@ -1,7 +1,6 @@
 """
 🔱 VEMBER-OS: THERMAL MATRIX
-Kernel-integrated system monitor. Provides high-resolution 
-vitals tracking and hardware thermal mapping.
+Description: Kernel-integrated system monitor. Provides high-resolution vitals tracking and hardware thermal mapping.
 """
 
 import psutil
