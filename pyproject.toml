@@ -1,6 +1,6 @@
 [project]
 name = "vember-os"
-version = "0.1.1a3"
+version = "0.1.1a4"
 description = "Ncurses-based Terminal OS"
 readme = "README.md"
 requires-python = ">=3.13"
