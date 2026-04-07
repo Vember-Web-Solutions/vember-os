@@ -11,7 +11,7 @@ By decoupling logic from presentation, Vember-OS utilizes the **Windfall Composi
 
 ### 🧩 Core Architecture
 - **The Brain:** Docker-orchestrated Node-Registry (Python 3.13)
-- **The Face:** Windfall Tri-Render Engine (Internal v1.0.0)
+- **The Face:** Rich-Powered Interface (Internal v1.0.0)
 - **The Vault:** Hybrid Cryptographic Authentication
 
 ---
@@ -20,7 +20,7 @@ By decoupling logic from presentation, Vember-OS utilizes the **Windfall Composi
 Vember-OS utilizes an **Ultra-Flat Architecture** to minimize complexity and maximize speed within a Docker sandbox.
 
 * **The Brain (`core.py`):** An AST-based (Abstract Syntax Tree) scanner that inspects automation nodes without executing them, ensuring safety and metadata accuracy.
-* **The Face (`main.py`):** A high-performance Ncurses + Rich TUI (Terminal User Interface) providing a real-time dashboard for node management.
+* **The Face (`main.py`):** A high-performance Rich TUI (Terminal User Interface) providing a real-time, responsive dashboard for node management.
 * **The Sandbox (`Docker`):** A fully isolated Debian-based environment using `uv` for lightning-fast dependency resolution.
 * **The Vault (E2EE):** Future-proofed for End-to-End Encryption, ensuring all node-to-node communication and data persistence is cryptographically secured.
 
@@ -33,10 +33,16 @@ The Vember Dashboard is divided into three functional zones:
 3.  **Command Bar (Bottom):** Hotkeys for navigation, rescanning, and execution.
 
 ### 🔱 How it Works
-1.  **Drop a script** into the `nodes/` folder.
-2.  **Add a docstring** at the top (e.g., `"""Monitor CPU Usage"""`).
-3.  **Boot the OS:** `docker compose run --rm vember-os`.
-4.  **Navigate & Run:** Use the arrows to select and `ENTER` to execute.
+Vember-OS transforms simple scripts into a managed automation fleet. The process is designed for zero-friction deployment:
+
+1.  **Define a Node:** Drop any Python script into the `nodes/` directory.
+2.  **Metadata Tagging:** Add a docstring at the top (e.g., `"""Monitor System Health"""`). Vember-OS automatically parses this as the node's description.
+3.  **Boot the OS:** Spin up the environment with a single command:
+    ```bash
+    docker compose run --rm vember-os
+    ```
+4.  **The Dashboard:** Navigate the **Rich-powered TUI** using your arrow keys. High-performance rendering provides real-time feedback and execution status.
+5.  **Execute:** Hit `ENTER` to trigger the selecte
 
 ---
 
