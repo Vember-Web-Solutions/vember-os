@@ -11,7 +11,7 @@ By decoupling logic from presentation, Vember-OS utilizes the **Windfall Composi
 
 ### 🧩 Core Architecture
 - **The Brain:** Docker-orchestrated Node-Registry (Python 3.13)
-- **The Face:** Windfall Tri-Render Engine (Internal v1.0.0)
+- **The Face:** Rich-Powered Interface (Internal v1.0.0)
 - **The Vault:** Hybrid Cryptographic Authentication
 
 ---
@@ -20,7 +20,7 @@ By decoupling logic from presentation, Vember-OS utilizes the **Windfall Composi
 Vember-OS utilizes an **Ultra-Flat Architecture** to minimize complexity and maximize speed within a Docker sandbox.
 
 * **The Brain (`core.py`):** An AST-based (Abstract Syntax Tree) scanner that inspects automation nodes without executing them, ensuring safety and metadata accuracy.
-* **The Face (`main.py`):** A high-performance Ncurses + Rich TUI (Terminal User Interface) providing a real-time dashboard for node management.
+* **The Face (`main.py`):** A high-performance Rich TUI (Terminal User Interface) providing a real-time, responsive dashboard for node management.
 * **The Sandbox (`Docker`):** A fully isolated Debian-based environment using `uv` for lightning-fast dependency resolution.
 * **The Vault (E2EE):** Future-proofed for End-to-End Encryption, ensuring all node-to-node communication and data persistence is cryptographically secured.
 
