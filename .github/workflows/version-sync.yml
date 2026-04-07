@@ -8,6 +8,9 @@ on:
     paths:
       - 'pyproject.toml' # Only run if the version actually changed
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   sync-version:
     runs-on: ubuntu-latest
