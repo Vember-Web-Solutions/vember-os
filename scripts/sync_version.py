@@ -3,16 +3,28 @@ import re
 from pathlib import Path
 
 def sync():
+	# 🔱 Find the project root (one level up from /scripts)
+	root = Path(__file__).parent.parent
+	
+	pyproject_path = root / "pyproject.toml"
+	readme_path = root / "README.md"
+
 	# 1. Read version from pyproject.toml
-	with open("pyproject.toml", "rb") as f:
+	if not pyproject_path.exists():
+		print(f"❌ Error: Could not find {pyproject_path}")
+		exit(1)
+
+	with open(pyproject_path, "rb") as f:
 		data = tomllib.load(f)
 		version = data["project"]["version"]
 
 	# 2. Update README.md badge
-	readme_path = Path("README.md")
+	if not readme_path.exists():
+		print(f"❌ Error: Could not find {readme_path}")
+		exit(1)
+
 	content = readme_path.read_text()
 	
-	# Updated regex in sync_version.py to handle the new PEP 440 format
 	pattern = r"version-(.*?)-orange"
 	new_badge = f"version-{version}-orange"
 	
