@@ -1,15 +1,13 @@
 services:
-  vember-os: # <--- Line 3: Ensure 2 spaces here
-    build: . # <--- Line 4: Ensure 4 spaces here
+  vember-os:
+    build: .
     container_name: vember_hub
     stdin_open: true 
     tty: true
+    # Use host mode to bypass the virtual bridge entirely
     network_mode: "host"
     cap_add:
       - NET_ADMIN
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
     environment:
       - TERM=xterm-256color
       - COLORTERM=truecolor
@@ -19,10 +17,3 @@ services:
       - ./nodes:/app/nodes
       - ./data:/app/data
       - /sys:/sys:ro
-      - /sys/class/thermal:/sys/class/thermal:ro
-      - /sys/class/hwmon:/sys/class/hwmon:ro
-networks:
-  default:
-    driver: bridge
-    driver_opts:
-      com.docker.network.driver.mtu: 1400

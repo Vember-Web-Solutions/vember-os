@@ -1,13 +1,22 @@
+"""
+Vember-OS DataHub Service
+-------------------------
+The central nervous system for data. It provides a standardized API 
+for 'Fetchers' to save telemetry and 'Nodes' to display it, ensuring 
+system-wide data consistency.
+
+Key Features:
+- Atomic JSON writes with automatic 'last_updated' metadata injection.
+- Standardized HH:MM:SS timestamp formatting for UI synchronization.
+- Decouples data acquisition from data visualization.
+"""
+
 import json
 import os
 import time
 from datetime import datetime
 
 class DataHub:
-	"""
-	Vember-OS Central Data Service
-	Handles all local telemetry persistence to ensure digital autonomy.
-	"""
 	def __init__(self, data_dir="data"):
 		self.data_dir = data_dir
 		if not os.path.exists(self.data_dir):

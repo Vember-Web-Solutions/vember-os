@@ -27,40 +27,31 @@ class WeatherNode:
 	def refresh(self):
 		"""
 		Polls the local DataHub for weather telemetry.
-		Bypasses all networking issues by reading from the filesystem.
 		"""
-		# Request 'weather.json' payload from the Hub
+		# 🔱 THE FIX: Unpack the tuple!
+		# data_hub.py returns (payload, sync_time)
 		payload, sync_time = self.hub.read("weather")
 		
 		if payload is None:
-			# sync_time will contain "FILE_MISSING" or "CORRUPT" from Hub
 			self.data = {"error": f"State: {sync_time}"}
 			return False
 
 		try:
-			# Map Open-Meteo Schema from the local JSON payload
-			current = payload['current']
-			daily = payload['daily']
-			
+			# Now 'payload' is the dictionary: {"temperature": "48", ...}
+			# We can safely use .get() on it.
 			self.data = {
-				"temp": current['temperature_2m'],
-				"wind": current.get('wind_speed_10m', '--'),
-				"desc": self._decode_weather_code(current['weather_code']),
-				"forecast": []
+				"temp": payload.get('temperature', '--'),
+				"wind": payload.get('wind_speed', '--'),
+				"desc": payload.get('description', 'Unknown'),
+				"humidity": payload.get('humidity', '--'),
+				"forecast": [] 
 			}
 			
-			# Map 3-day forecast
-			for i in range(3):
-				self.data["forecast"].append({
-					"date": daily['time'][i],
-					"max": daily['temperature_2m_max'][i],
-					"min": daily['temperature_2m_min'][i]
-				})
-				
 			self.last_sync = sync_time
 			return True
-		except KeyError as e:
-			self.data = {"error": f"Schema Mismatch: {str(e)}"}
+			
+		except Exception as e:
+			self.data = {"error": f"Parse Error: {str(e)}"}
 			return False
 
 	def _decode_weather_code(self, code):
