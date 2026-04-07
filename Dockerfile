@@ -1,14 +1,20 @@
-# 🔱 VEMBER-OS CORE IMAGE (v1.0.5 Patch)
-# Optimized for UV and Rich-Live Telemetry.
+# 🔱 VEMBER-OS: CONTAINER IMAGE
+# Defines the secure, Docker-orchestrated environment for the 
+# Vember-OS node automation ecosystem.
+
 FROM python:3.13-slim-bookworm
 
-# Install essential system utilities only
+# 🛠️ SYSTEM HARDENING: Install the "Autonomous Toolkit"
+# Adding ca-certificates for SSL trust and openssh-client for future autonomy
 RUN apt-get update && apt-get install -y \
     curl \
+    wget \
+    openssh-client \
+    ca-certificates \
+    openssl \
     git \
-    && rm -rf /var/lib/apt/lists/* 
-
-# Inject UV (The Speed-Demon Package Manager)
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/* # Inject UV
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/ 
 
 WORKDIR /app 
@@ -18,13 +24,13 @@ ENV TERM=xterm-256color
 ENV COLORTERM=truecolor
 ENV PYTHONUNBUFFERED=1
 ENV UV_LINK_MODE=copy 
+# Ensure Python sees the system's certificate store
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
-# Cache-efficient dependency synchronization
 COPY pyproject.toml uv.lock README.md ./ 
 RUN uv sync --frozen 
 
-# Deploy Application Source
 COPY . . 
 
-# Launch the Vember Kernel
 CMD ["uv", "run", "python", "main.py"]

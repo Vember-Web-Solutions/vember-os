@@ -1,7 +1,7 @@
 # 🔱 VEMBER-OS
-> **The Node-Based Automation Ecosystem**
+> **Node-Based Terminal Operating System**
 
-![Version](https://img.shields.io/badge/version-0.1.1a6-orange?style=for-the-badge) [![CodeQL](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql)
+![Version](https://img.shields.io/badge/version-0.1.1a9-orange?style=for-the-badge) [![CodeQL](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql)
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue?style=for-the-badge&logo=python)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)
 ![E2EE](https://img.shields.io/badge/Security-E2EE_Encrypted-blueviolet?style=for-the-badge)
@@ -15,6 +15,9 @@ By decoupling logic from presentation, Vember-OS utilizes the **Windfall Composi
 - **The Vault:** Hybrid Cryptographic Authentication
 
 ---
+
+## Dashboard Engine
+The primary interface layer for the Node-Based Architecture. This module provides a base framework for extensible dashboard layouts, utilizing a single-drain telemetry pipeline and a unified input kernel. It decouples UI rendering from the OS Kernel, allowing for context-aware navigation and multi-view dashboard configurations.
 
 ## 🏗️ Architecture Overview
 Vember-OS utilizes an **Ultra-Flat Architecture** to minimize complexity and maximize speed within a Docker sandbox.

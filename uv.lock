@@ -75,7 +75,7 @@ wheels = [
 
 [[package]]
 name = "vember-os"
-version = "0.1.1a0"
+version = "0.1.1a9"
 source = { editable = "." }
 dependencies = [
     { name = "psutil" },
