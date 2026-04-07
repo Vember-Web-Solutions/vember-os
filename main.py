@@ -1,149 +1,103 @@
 """
-🔱 VEMBER-OS CORE DASHBOARD (v1.0.5 Patch)
-The Primary Control Interface for the Node-Based Architecture.
-Refactored for Native Input Kernel and Single-Drain Telemetry.
+🔱 VEMBER-OS KERNEL
+Central execution engine. Manages Dashboard lifecycle, 
+Telemetry streaming, and the Input Kernel.
 """
 
 import time
+import os
+import sys
+import queue
 from rich.live import Live
 from rich.console import Console
-from windfall import Windfall
-from core import NodeScanner
-from runner import NodeRunner
-from input_handler import KeyListener
 
-class VemberDashboard:
+# Internal Engine Imports
+from engine.input_handler import KeyListener
+from engine.dashboards import MainDashboard
+from engine.core import NodeScanner
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+class VemberKernel:
 	def __init__(self):
-		self.scanner = NodeScanner()
-		self.windfall = Windfall(theme_key="VEMBER_DARK")
-		self.windfall.toggle_sidebar = True 
-		
-		self.runner = NodeRunner()
 		self.console = Console()
-		self.keyboard = KeyListener() 
+		self.dash = MainDashboard()
+		self.keyboard = KeyListener()
+		self.refresh_rate = 0.05
 
-		self.selected_index = 0
-		self.running = True
-		self.viewing_node = False # 🔱 NEW: Track if we are focused on a process
-		self.nodes = []
-		self.output_buffer = ""
+	def startup(self):
+		self.dash.nodes = self.dash.scanner.scan()
+		if not self.dash.nodes:
+			# Just trigger a toast instead of killing the OS
+			self.dash.trigger_toast("WARNING: NO NODES DETECTED", duration=100)
+			# Create a dummy node so the MeshMap doesn't crash on index lookup
+			self.dash.nodes = [{"name": "OFFLINE", "path": "", "controls": {}}]
 
-	def handle_input(self):
-		key = self.keyboard.get_key()
-		if not key: return
-		k = key.lower()
+	def _update_telemetry(self):
+		"""
+		Drains the Node Runner queue.
+		Implements Frame-Swapping logic via '--- REFRESH ---' tags.
+		"""
+		new_data = self.dash.runner.get_latest_output()
+		if not new_data or not new_data.strip():
+			return 
 
-		# 🔱 GLOBAL: Always allow Shutdown
-		if k == "q":
-			self.running = False
-			return
-
-		# 🔱 CONTEXT: Inside a Node
-		if self.viewing_node:
-			if k == "\x1b": # ESC: Detach but keep running
-				self.viewing_node = False
-			elif k == "x": # New: Hard Kill process
-				self.runner.stop()
-				self.viewing_node = False
-				self.output_buffer = "[bold red]SIGNAL: Process Terminated.[/]"
-
-		# 🔱 CONTEXT: Main Dashboard
+		if "--- REFRESH ---" in new_data:
+			# 🔱 STABILITY: Only replace the buffer if we have a full new frame.
+			# This prevents the 'flicker' or 'empty viewport' issues.
+			parts = new_data.split("--- REFRESH ---")
+			frame = parts[-2].strip()
+			if frame:
+				self.dash.output_buffer = frame
 		else:
-			if k in ["w", "\x1b[a"]: # Up
-				if self.selected_index > 0:
-					self.selected_index -= 1
-			elif k in ["s", "\x1b[b"]: # Down
-				if self.selected_index < len(self.nodes) - 1:
-					self.selected_index += 1
-			elif k in ["\n", "\r"]: # Enter
-				self.viewing_node = True
-				# Only execute if NOT already running
-				if not self.runner.is_running:
-					self.output_buffer = ""
-					curr_node = self.nodes[self.selected_index]
-					self.runner.execute(curr_node['path'])
-				
-	def update_logic(self):
-		"""Single-Drain Telemetry Sync."""
-		self.nodes = self.scanner.scan()
-		
-		# Pull everything currently in the pipe
-		new_output = self.runner.get_latest_output()
-		if not new_output:
-			return
-
-		if "--- REFRESH ---" in new_output:
-			# Overwrite buffer with the most recent full frame
-			parts = new_output.split("--- REFRESH ---")
-			if len(parts) > 1:
-				self.output_buffer = parts[-2].strip()
-		else:
-			# Append standard scrolling logs
-			self.output_buffer += new_output
-
-	def _get_sidebar_content(self):
-		content = ""
-		for i, node in enumerate(self.nodes):
-			prefix = "▶ " if i == self.selected_index else "  "
-			if i == self.selected_index:
-				content += f"[bold cyan]{prefix}{node['name']}[/]\n"
-			else:
-				content += f"{prefix}{node['name']}\n"
-		return content
-
-	def _get_viewport_content(self):
-		if self.viewing_node:
-			return self.output_buffer
-		
-		status = "[bold cyan]Active in Background[/]" if self.runner.is_running else "Idle"
-		return f"[dim]DASHBOARD MODE[/]\n[white]System Status: {status}[/]\n\nPress ENTER to focus view."
-
-	def _get_footer_content(self):
-		if self.viewing_node:
-			return "[bold cyan]VIEWING NODE[/] | ESC Detach (Keep Running) | X Kill Process | Q Shutdown"
-		
-		nav = "W/S Navigate | ENTER Focus/Run | Q Shutdown"
-		if self.runner.is_running:
-			return f"[bold green]NODE ACTIVE[/] | {nav}"
-		return f"[dim]{nav}[/]"
+			# Standard append mode for logging/linear nodes
+			self.dash.output_buffer += new_data
 
 	def run(self):
-		"""The Main Render Loop using Rich.Live."""
-		components = {
-			"sidebar": self._get_sidebar_content,
-			"viewport": self._get_viewport_content,
-			"footer": self._get_footer_content
-		}
-
+		# 🔱 Removed manual clear: startup happens before we flip screens
+		self.startup()
+		
 		try:
-			with Live(
-				self.windfall.compose(components), 
-				console=self.console, 
-				screen=True, 
-				auto_refresh=False
-			) as live:
+			# 🔱 THE FIX: Enter the Alternate Screen Buffer
+			# This ensures that when the OS closes, your terminal scrollback is preserved
+			with self.console.screen():
 				
-				while self.running:
-					# 🔱 Synchronous Input Handling
-					self.handle_input()
-					
-					self.update_logic()
-					
-					live.update(self.windfall.compose(components))
-					live.refresh()
-					
-					time.sleep(0.05) 
+				# Initialize the first frame
+				layout_map = self.dash.get_layout_map()
+				frame = self.dash.windfall.compose(layout_map)
 
+				# 🔱 Set screen=True in Live for proper sizing inside the alternate buffer
+				with Live(frame, console=self.console, screen=True, auto_refresh=False) as live:
+					while self.dash.running:
+						# 1. Input Handoff
+						try:
+							key = self.keyboard.input_queue.get_nowait()
+							self.dash.handle_input(key)
+						except queue.Empty:
+							pass
+						
+						# 2. Telemetry Bridge (Thermal Matrix -> OS Header)
+						self._update_telemetry()
+						
+						# 3. Render Handoff
+						# Re-calculate the map (handles Toast expiry and selection changes)
+						current_map = self.dash.get_layout_map()
+						live.update(self.dash.windfall.compose(current_map))
+						live.refresh()
+						
+						time.sleep(self.refresh_rate)
+
+		except KeyboardInterrupt:
+			pass
 		finally:
-			# 🔱 THE HAND-BACK SEQUENCE
-			# Restores terminal TTY settings before the process exits
-			self.keyboard.stop() 
-			if self.runner.is_running:
-				self.runner.stop()
-			
-			self.console.clear()
-			print("[VEMBER-OS] Kernel Offline. Terminal Control Restored.")
+			# 🔱 Cleanup no longer needs console.clear() 
+			# The .screen() context manager handles the "wipe" automatically
+			self.cleanup()
+
+	def cleanup(self):
+		self.keyboard.stop()
+		self.dash.runner.stop()
 
 if __name__ == "__main__":
-	app = VemberDashboard()
-	app.run()
+	kernel = VemberKernel()
+	kernel.run()

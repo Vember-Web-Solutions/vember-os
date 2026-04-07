@@ -4,16 +4,22 @@ services:
     container_name: vember_hub
     stdin_open: true 
     tty: true
-    # Use host mode to bypass the virtual bridge entirely
+    privileged: true
+    stop_signal: SIGINT
     network_mode: "host"
     cap_add:
       - NET_ADMIN
     environment:
       - TERM=xterm-256color
       - COLORTERM=truecolor
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - TZ=America/New_York
     volumes:
       - .:/app 
       - /app/.venv
       - ./nodes:/app/nodes
       - ./data:/app/data
       - /sys:/sys:ro
+      - /proc:/proc:ro
+      

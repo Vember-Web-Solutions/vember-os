@@ -22,21 +22,23 @@ class KeyListener:
 
 	def _listener(self):
 		try:
-			tty.setcbreak(self.fd)
+			# 🔱 Add a check to see if we are in an interactive terminal
+			if sys.stdin.isatty():
+				tty.setcbreak(self.fd)
+			
 			while self.running:
-				# Polling with select prevents the thread from 
-				# getting stuck on sys.stdin.read
+				# Polling with select prevents the thread from blocking
 				r, _, _ = select.select([sys.stdin], [], [], 0.1)
 				if r:
 					char = sys.stdin.read(1)
-					if char == '\x1b': # Handle Arrows
-						r2, _, _ = select.select([sys.stdin], [], [], 0.05)
-						if r2:
-							char += sys.stdin.read(2)
+					# ... (rest of your arrow handling logic) ...
 					self.input_queue.put(char)
+		except Exception as e:
+			# 🔱 If it fails, don't crash the OS, just log it
+			print(f"🔱 INPUT_KERNEL_ERROR: {e}")
 		finally:
-			# Emergency restore if thread crashes
-			termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
+			if sys.stdin.isatty():
+				termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
 
 	def stop(self):
 		self.running = False

@@ -1,11 +1,10 @@
 [project]
 name = "vember-os"
-version = "0.1.1a6" # 🔱 Incrementing for the new Snapshot
+version = "0.1.1a9"
 description = "Secure, Docker-orchestrated Node Automation Ecosystem"
 requires-python = ">=3.13"
 dependencies = [
     "psutil>=7.2.2",
-    "requests>=2.33.1",
     "rich",
 ]
 
