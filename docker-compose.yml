@@ -5,6 +5,11 @@ services:
     stdin_open: true 
     tty: true
     network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     environment:
       - TERM=xterm-256color
       - COLORTERM=truecolor
@@ -16,3 +21,8 @@ services:
       - /sys:/sys:ro
       - /sys/class/thermal:/sys/class/thermal:ro
       - /sys/class/hwmon:/sys/class/hwmon:ro
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1400
