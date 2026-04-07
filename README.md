@@ -63,10 +63,5 @@ cd vember-os
 # 2. Build the Vember-OS Environment
 docker compose build
 
-<<<<<<< HEAD
 # Launch the Hub
 docker compose run --rm vember-os
-=======
-# 3. Launch the Hub
-docker compose run --rm vember-os
->>>>>>> dev
