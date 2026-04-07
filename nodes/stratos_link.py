@@ -1,7 +1,6 @@
 """
 🔱 VEMBER-OS: STRATOS-LINK
-Atmospheric telemetry engine. Handles satellite weather relays 
-and environmental data ingestion via the Vember Data Protocol.
+Description: Atmospheric telemetry engine. Handles satellite weather relays and environmental data ingestion via the Vember Data Protocol.
 """
 
 import time
