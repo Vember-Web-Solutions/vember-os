@@ -1,7 +1,7 @@
 # 🔱 VEMBER-OS
 > **The Node-Based Automation Ecosystem**
 
-![Version](https://img.shields.io/badge/version-0.1.1a0-orange?style=for-the-badge) [![CodeQL](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql)
+![Version](https://img.shields.io/badge/version-0.1.1a6-orange?style=for-the-badge) [![CodeQL](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql)
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue?style=for-the-badge&logo=python)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)
 ![E2EE](https://img.shields.io/badge/Security-E2EE_Encrypted-blueviolet?style=for-the-badge)
