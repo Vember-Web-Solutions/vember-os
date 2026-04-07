@@ -58,4 +58,3 @@ jobs:
             --body "Automated version sync triggered by pyproject.toml update. Node.js 24 Engine Enforced." \
             --base ${{ github.ref_name }} \
             --head $BRANCH_NAME \
-            --label "automated"
