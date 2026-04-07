@@ -1,7 +1,7 @@
 # 🔱 VEMBER-OS
 > **The Node-Based Automation Ecosystem**
 
-![Version](https://img.shields.io/badge/version-0.1.1a6-orange?style=for-the-badge) [![CodeQL](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql/badge.svg)]
+![Version](https://img.shields.io/badge/version-0.1.1a6-orange?style=for-the-badge) [![CodeQL](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql)
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue?style=for-the-badge&logo=python)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)
 ![E2EE](https://img.shields.io/badge/Security-E2EE_Encrypted-blueviolet?style=for-the-badge)
@@ -28,12 +28,12 @@ Vember-OS utilizes an **Ultra-Flat Architecture** to minimize complexity and max
 
 ## 🕹️ Interface & Usage
 The Vember Dashboard is divided into three functional zones:
-1.  **Node Registry (Left):** Live list of all `.py` files detected in the `/ops` directory.
+1.  **Node Registry (Left):** Live list of all `.py` files detected in the `/nodes` directory.
 2.  **Node Inspector (Right):** Real-time metadata, docstring parsing, and path verification.
 3.  **Command Bar (Bottom):** Hotkeys for navigation, rescanning, and execution.
 
 ### 🔱 How it Works
-1.  **Drop a script** into the `ops/` folder.
+1.  **Drop a script** into the `nodes/` folder.
 2.  **Add a docstring** at the top (e.g., `"""Monitor CPU Usage"""`).
 3.  **Boot the OS:** `docker compose run --rm vember-os`.
 4.  **Navigate & Run:** Use the arrows to select and `ENTER` to execute.
@@ -63,5 +63,5 @@ cd vember-os
 # 2. Build the Vember-OS Environment
 docker compose build
 
-# 3. Launch the Hub
+# Launch the Hub
 docker compose run --rm vember-os
