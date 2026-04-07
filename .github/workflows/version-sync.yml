@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write # Required to create/approve PRs
+      pull-requests: write
 
     steps:
       - name: 🛰️ Checkout Code
@@ -27,19 +27,33 @@ jobs:
       - name: 🔄 Run Sync Script
         run: python scripts/sync_version.py
 
-      - name: 💾 Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "docs: sync version badge to $(python -c 'import tomllib; print(tomllib.load(open(\"pyproject.toml\", \"rb\"))[\"projectext\"][\"version\"])')"
-          committer: Vember-Sync <bot@vember-os.local>
-          author: Vember-Sync <bot@vember-os.local>
-          branch: auto-version-sync
-          title: "🔱 Vember-Sync: Update README Badge"
-          body: |
-            Automated version sync triggered by changes in `pyproject.toml`.
-            - Updated README.md version badge.
-          labels: |
-            documentation
-            automated
-          delete-branch: true
+      - name: 💾 Commit and PR via GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 1. Setup Identity
+          git config --global user.name "Vember-Sync"
+          git config --global user.email "bot@vember-os.local"
+          
+          # 2. Check for changes
+          if git diff --quiet README.md; then
+            echo "No changes detected in README. Sync unnecessary."
+            exit 0
+          fi
+
+          # 3. Create a unique branch for the PR
+          BRANCH_NAME="sync/version-$(date +%s)"
+          git checkout -b $BRANCH_NAME
+          
+          # 4. Push changes
+          git add README.md
+          git commit -m "docs: sync version badge to $(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          git push origin $BRANCH_NAME
+
+          # 5. Create the PR using Native GitHub CLI
+          gh pr create \
+            --title "🔱 Vember-Sync: Update README Badge" \
+            --body "Automated version sync triggered by pyproject.toml update." \
+            --base ${{ github.ref_name }} \
+            --head $BRANCH_NAME \
+            --label "automated"
