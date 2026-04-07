@@ -1,6 +1,7 @@
 """
-🔱 VEMBER-OS NATIVE INPUT KERNEL (v1.0.5 Patch)
-Low-level terminal abstraction using termios and select.
+🔱 VEMBER-OS: INPUT HANDLER
+Low-level terminal abstraction. Utilizes termios and select for 
+non-blocking, raw-mode keyboard event capturing.
 """
 
 import sys

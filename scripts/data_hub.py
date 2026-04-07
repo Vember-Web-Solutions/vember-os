@@ -1,14 +1,11 @@
 """
-Vember-OS DataHub Service
--------------------------
-The central nervous system for data. It provides a standardized API 
-for 'Fetchers' to save telemetry and 'Nodes' to display it, ensuring 
-system-wide data consistency.
+🔱 VEMBER-OS: DATAHUB SERVICE
+The central nervous system for state persistence. Provides a standardized 
+API for telemetry ingestion and node synchronization.
 
-Key Features:
-- Atomic JSON writes with automatic 'last_updated' metadata injection.
-- Standardized HH:MM:SS timestamp formatting for UI synchronization.
-- Decouples data acquisition from data visualization.
+Core Responsibilities:
+* Atomic JSON operations with metadata injection.
+* Data decoupling for multi-node visualization.
 """
 
 import json

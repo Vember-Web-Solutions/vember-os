@@ -1,9 +1,7 @@
 """
-Title: Stratos-Link
-Version: 2.1.1
-Description: Atmospheric Telemetry & Satellite Weather Relay
-Autostart: False
-Protocol: ||DATA|0.0|TEMP||
+🔱 VEMBER-OS: STRATOS-LINK
+Atmospheric telemetry engine. Handles satellite weather relays 
+and environmental data ingestion via the Vember Data Protocol.
 """
 
 import time

@@ -1,9 +1,11 @@
 """
-Vember-OS Fetcher Suite
-----------------------
-Consolidated telemetry acquisition engine. Handles external APIs (Weather), 
-local system vitals (Load/Thermal), and Git version tracking. 
-Supports both manual targeted polling and automatic scheduler updates.
+🔱 VEMBER-OS: FETCHER SUITE
+Consolidated telemetry acquisition engine. Aggregates external API data, 
+local system vitals, and environment metadata.
+
+Core Responsibilities:
+* Targeted polling and automated scheduler integration.
+* Standardized data formatting for DataHub ingestion.
 """
 
 import subprocess

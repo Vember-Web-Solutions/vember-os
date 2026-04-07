@@ -1,7 +1,7 @@
 """
-🔱 VEMBER-OS NODE RUNNER
-Handles asynchronous process execution for Vember-OS nodes.
-Uses non-blocking thread-queues to stream real-time telemetry to the TUI.
+🔱 VEMBER-OS: NODE RUNNER
+Asynchronous execution kernel. Manages isolated process lifecycles 
+and thread-safe telemetry streaming via non-blocking queues.
 """
 
 import subprocess

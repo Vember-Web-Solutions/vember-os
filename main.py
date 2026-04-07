@@ -1,7 +1,7 @@
 """
-🔱 VEMBER-OS KERNEL
-Central execution engine. Manages Dashboard lifecycle, 
-Telemetry streaming, and the Input Kernel.
+🔱 VEMBER-OS: KERNEL
+Central execution engine. Orchestrates the dashboard lifecycle, 
+asynchronous telemetry streaming, and the input kernel.
 """
 
 import time

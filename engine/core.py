@@ -1,7 +1,9 @@
 """
-🔱 VEMBER-OS NODE REGISTRY (v2.1.0)
-Advanced Metadata Parsing for Context-Aware Navigation.
+🔱 VEMBER-OS: NODE SCANNER
+Metadata ingestion engine. Performs AST-based analysis of node scripts 
+to extract descriptions, controls, and contextual navigation data.
 """
+
 import ast
 import os
 import re

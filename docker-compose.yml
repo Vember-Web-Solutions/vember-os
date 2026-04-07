@@ -22,4 +22,3 @@ services:
       - ./data:/app/data
       - /sys:/sys:ro
       - /proc:/proc:ro
-      

@@ -1,7 +1,9 @@
 """
-🔱 WINDFALL TRI-RENDER ENGINE (v2.0.0)
-The Scene Compositor and Navigation Orchestrator for VEMBER-OS.
+🔱 VEMBER-OS: WINDFALL ENGINE
+The Scene Compositor. Defines the physical layout architecture and 
+orchestrates dynamic widget injection across named render zones.
 """
+
 from rich.layout import Layout
 from rich.panel import Panel
 from assets.branding import VemberAssets as Assets

@@ -1,6 +1,7 @@
 """
-🔱 VEMBER-OS ALPHA (v0.1.1a9)
-Standardized Widget Set: OSCard Pulse Status & Node Inspector.
+🔱 VEMBER-OS: WIDGET LIBRARY
+A standardized UI component set. Implements inheritance-based 
+rendering for spatial cards, inspectors, and status indicators.
 """
 
 from rich import box
@@ -172,7 +173,6 @@ class OSMeshMap(WindfallElement):
 		connector = "[cyan]━━━━[/]" if (self.active_index < 2) else "[dim]━━━━[/]"
 		grid.add_row(weather, connector, hub)
 
-		grid.add_row(weather, connector, hub)
 		return self.wrap(grid)
 
 class OSNodeInspector(WindfallElement):

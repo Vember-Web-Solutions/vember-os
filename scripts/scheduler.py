@@ -1,8 +1,7 @@
 """
-Vember-OS Task Scheduler
-------------------------
-The heartbeat of the OS. Manages staggered execution intervals for 
-all fetchers to prevent network congestion and CPU spikes.
+🔱 VEMBER-OS: TASK SCHEDULER
+The system heartbeat. Coordinates staggered execution intervals 
+to optimize resource utilization and network stability.
 """
 
 import time

@@ -1,3 +1,9 @@
+"""
+🔱 VEMBER-OS: VERSION SYNCHRONIZER
+Utility for managing cross-component version alignment. Ensures the 
+Project Manifest and Alpha Build numbers remain synchronized across branches.
+"""
+
 import tomllib
 import re
 from pathlib import Path

@@ -1,6 +1,7 @@
 """
-🔱 VEMBER-OS ASSET REGISTRY (v2.0.0)
-Centralized Design System for Widgets and Mesh Navigation.
+🔱 VEMBER-OS: ASSET REGISTRY
+Centralized design system. Defines the visual identity, iconography, 
+and thematic color palettes for widgets and mesh navigation.
 """
 
 from dataclasses import dataclass

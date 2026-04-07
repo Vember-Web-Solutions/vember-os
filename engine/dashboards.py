@@ -1,7 +1,9 @@
 """
-🔱 VEMBER-OS CORE DASHBOARDS (v2.2.0)
-The engine room for telemetry, lifecycle, and spatial mesh navigation.
+🔱 VEMBER-OS: CORE DASHBOARDS
+The state management layer. Orchestrates telemetry synchronization, 
+application lifecycles, and spatial mesh navigation logic.
 """
+
 from rich.console import Group
 from engine.windfall import Windfall
 from engine.core import NodeScanner

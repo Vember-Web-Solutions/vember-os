@@ -1,8 +1,7 @@
 """
-Title: Thermal Matrix
-Version: 2.1.0
-Description: Kernel-Integrated System Monitor
-Autostart: True
+🔱 VEMBER-OS: THERMAL MATRIX
+Kernel-integrated system monitor. Provides high-resolution 
+vitals tracking and hardware thermal mapping.
 """
 
 import psutil

@@ -1,4 +1,7 @@
-# 🔱 VEMBER-OS CORE IMAGE (v1.1.0 Security Patch)
+# 🔱 VEMBER-OS: CONTAINER IMAGE
+# Defines the secure, Docker-orchestrated environment for the 
+# Vember-OS node automation ecosystem.
+
 FROM python:3.13-slim-bookworm
 
 # 🛠️ SYSTEM HARDENING: Install the "Autonomous Toolkit"

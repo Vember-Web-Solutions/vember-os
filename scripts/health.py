@@ -1,7 +1,7 @@
 """
-Vember-OS Health Service
----
-A reusable 200-OK status check for validating connectivity and service uptime.
+🔱 VEMBER-OS: HEALTH SERVICE
+Uptime validation utility. Provides a standardized heartbeat for 
+verifying connectivity and service integrity.
 """
 
 import subprocess
