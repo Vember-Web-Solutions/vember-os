@@ -44,6 +44,8 @@ The Vember Dashboard is divided into three functional zones:
 - [x] **Core Node Scanner:** AST-based metadata extraction.
 - [x] **Docker Integration:** Python 3.13 sandbox with `uv` synchronization.
 - [x] **Interactive Dashboard:** Ncurses-based TUI with sidebar navigation.
+- [x] **Native Input Kernel:** Detached viewport state and responsive input handling.
+- [x] **CI/CD Automation:** Vember-Sync bot for automated metadata and versioning.
 - [ ] **Execution Engine:** Subprocess-based node execution with UI suspension.
 - [ ] **E2EE Layer:** Implementation of End-to-End Encryption for node data.
 - [ ] **System Telemetry:** Live CPU/RAM monitoring in the dashboard header.
@@ -54,11 +56,12 @@ The Vember Dashboard is divided into three functional zones:
 
 ## 🚀 Quick Start
 ```bash
-# Clone the repository
-git clone [https://github.com/your-repo/vember-os.git](https://github.com/your-repo/vember-os.git)
+# 1. Clone the repository
+git clone [https://github.com/Vember-Web-Solutions/vember-os.git](https://github.com/Vember-Web-Solutions/vember-os.git)
+cd vember-os
 
-# Build the environment
+# 2. Build the Vember-OS Environment
 docker compose build
 
-# Launch the Hub
+# 3. Launch the Hub
 docker compose run --rm vember-os
