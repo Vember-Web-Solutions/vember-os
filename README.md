@@ -33,10 +33,16 @@ The Vember Dashboard is divided into three functional zones:
 3.  **Command Bar (Bottom):** Hotkeys for navigation, rescanning, and execution.
 
 ### 🔱 How it Works
-1.  **Drop a script** into the `nodes/` folder.
-2.  **Add a docstring** at the top (e.g., `"""Monitor CPU Usage"""`).
-3.  **Boot the OS:** `docker compose run --rm vember-os`.
-4.  **Navigate & Run:** Use the arrows to select and `ENTER` to execute.
+Vember-OS transforms simple scripts into a managed automation fleet. The process is designed for zero-friction deployment:
+
+1.  **Define a Node:** Drop any Python script into the `nodes/` directory.
+2.  **Metadata Tagging:** Add a docstring at the top (e.g., `"""Monitor System Health"""`). Vember-OS automatically parses this as the node's description.
+3.  **Boot the OS:** Spin up the environment with a single command:
+    ```bash
+    docker compose run --rm vember-os
+    ```
+4.  **The Dashboard:** Navigate the **Rich-powered TUI** using your arrow keys. High-performance rendering provides real-time feedback and execution status.
+5.  **Execute:** Hit `ENTER` to trigger the selecte
 
 ---
 

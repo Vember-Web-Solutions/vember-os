@@ -11,7 +11,7 @@ services:
     volumes:
       - .:/app 
       - /app/.venv
-      - ./ops:/app/ops
+      - ./nodes:/app/nodes
       - ./data:/app/data
       - /sys:/sys:ro
       - /sys/class/thermal:/sys/class/thermal:ro
