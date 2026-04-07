@@ -28,12 +28,12 @@ Vember-OS utilizes an **Ultra-Flat Architecture** to minimize complexity and max
 
 ## 🕹️ Interface & Usage
 The Vember Dashboard is divided into three functional zones:
-1.  **Node Registry (Left):** Live list of all `.py` files detected in the `/ops` directory.
+1.  **Node Registry (Left):** Live list of all `.py` files detected in the `/nodes` directory.
 2.  **Node Inspector (Right):** Real-time metadata, docstring parsing, and path verification.
 3.  **Command Bar (Bottom):** Hotkeys for navigation, rescanning, and execution.
 
 ### 🔱 How it Works
-1.  **Drop a script** into the `ops/` folder.
+1.  **Drop a script** into the `nodes/` folder.
 2.  **Add a docstring** at the top (e.g., `"""Monitor CPU Usage"""`).
 3.  **Boot the OS:** `docker compose run --rm vember-os`.
 4.  **Navigate & Run:** Use the arrows to select and `ENTER` to execute.
