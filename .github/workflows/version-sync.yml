@@ -4,18 +4,16 @@ on:
   push:
     branches:
       - main
-      - dev  # 🔱 Temporary for testing
+      - dev
     paths:
-      - 'pyproject.toml' # Only run if the version actually changed
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      - 'pyproject.toml'
 
 jobs:
   sync-version:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Crucial for pushing the README update back
+      contents: write
+      pull-requests: write # Required to create/approve PRs
 
     steps:
       - name: 🛰️ Checkout Code
@@ -29,10 +27,19 @@ jobs:
       - name: 🔄 Run Sync Script
         run: python scripts/sync_version.py
 
-      - name: 💾 Commit Changes
-        run: |
-          git config --global user.name "Vember-Bot"
-          git config --global user.email "bot@vember-os.local"
-          git add README.md
-          # Only commit if there are changes to avoid infinite loops
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: sync version badge to $(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" && git push)
+      - name: 💾 Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: sync version badge to $(python -c 'import tomllib; print(tomllib.load(open(\"pyproject.toml\", \"rb\"))[\"projectext\"][\"version\"])')"
+          committer: Vember-Sync <bot@vember-os.local>
+          author: Vember-Sync <bot@vember-os.local>
+          branch: auto-version-sync
+          title: "🔱 Vember-Sync: Update README Badge"
+          body: |
+            Automated version sync triggered by changes in `pyproject.toml`.
+            - Updated README.md version badge.
+          labels: |
+            documentation
+            automated
+          delete-branch: true
