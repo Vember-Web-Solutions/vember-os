@@ -1,6 +1,8 @@
 # 🔱 VEMBER-OS
 > **Node-Based Terminal Operating System**
 
+![Vember OS Logo](assets/Vember%20OS%20Logo.jpg)
+
 ![Version](https://img.shields.io/badge/version-0.1.1a9-orange?style=for-the-badge) [![CodeQL](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Vember-Web-Solutions/vember-os/actions/workflows/github-code-scanning/codeql)
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue?style=for-the-badge&logo=python)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)
