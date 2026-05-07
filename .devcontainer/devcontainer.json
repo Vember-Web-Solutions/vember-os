@@ -70,5 +70,5 @@
         }
     },
     "remoteUser": "root",
-    "postCreateCommand": "uv sync"
+    "postCreateCommand": "uv sync && echo \"export PS1='\\n\\[\\e[35m\\]🔱 Vember OS Forge > \\[\\e[m\\] '\" >> ~/.bashrc"
 }
