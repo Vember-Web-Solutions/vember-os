@@ -103,32 +103,40 @@ class OSActionMenu(WindfallElement):
 		return self.wrap(Group(desc, Padding("\n".join(actions), (1, 0))))
 
 class OSCard(WindfallElement):
-	"""🔱 NODE COMPONENT: Displays identity and real-time status."""
-	def __init__(self, title, is_running=False, icon="?", is_focused=False, **kwargs):
-		super().__init__(title=f"{icon} {title}", is_focused=is_focused, **kwargs)
-		self.is_running = is_running
+    """🔱 NODE COMPONENT: Displays identity and real-time status."""
 
-	def __rich__(self):
-		# 🔱 LOGIC: 
-		# Focused = Primary Color (Cyan/White)
-		# Running (Background) = Secondary Color (Blue/Green)
-		# Standby = Dim
-		
-		if self.is_focused:
-			style = self.theme.primary
-			status_text = "● ACTIVE"
-		elif self.is_running:
-			style = self.theme.secondary
-			status_text = "● RUNNING"
-		else:
-			style = "dim"
-			status_text = "○ READY"
-		
-		content = Align.center(
-			f"\n[{style}]{status_text}[/]",
-			vertical="middle"
-		)
-		return self.wrap(content)
+    def __init__(self, title, is_running=False, icon="?", is_focused=False, **kwargs):
+        super().__init__(title=f"{icon} {title}", is_focused=is_focused, **kwargs)
+        self.is_running = is_running
+
+    def __rich__(self):
+        # 🔱 LOGIC:
+        # Focused = Primary Color (Cyan/White)
+        # Running (Background) = Secondary Color (Blue/Green)
+        # Standby = Dim
+
+        if self.is_focused:
+            style = self.theme.primary
+            status_text = "● ACTIVE"
+        elif self.is_running:
+            style = self.theme.secondary
+            status_text = "● RUNNING"
+        else:
+            style = "dim"
+            status_text = "○ READY"
+
+        clean_title = self.title.split(" ")[-1]
+
+        content = Align.center(
+            Group(
+                f"[bold]{clean_title}[/]",  # The Node Name
+                f"[{style}]{status_text}[/]",  # The Status
+            ),
+            vertical="middle",
+            pad=False,
+        )
+        return self.wrap(content)
+
 
 class OSMeshConnector(WindfallElement):
 	"""The 'Peer-to-Peer' lines that build the decentralized web."""
@@ -151,7 +159,7 @@ class OSMeshMap(WindfallElement):
 	def __rich__(self):
 		grid = Table.grid(expand=True, padding=1)
 		grid.add_column(justify="center", ratio=1)
-		grid.add_column(justify="center", ratio=1) # Connector col
+		grid.add_column(justify="center", ratio=12) # Connector col
 		grid.add_column(justify="center", ratio=1)
 
 		# 🔱 Determine states for each card
@@ -176,16 +184,27 @@ class OSMeshMap(WindfallElement):
 		return self.wrap(grid)
 
 class OSNodeInspector(WindfallElement):
-	"""🔱 TERMINAL: The 'Zoomed In' view when a node is active."""
+	"""🔱 TERMINAL: v0.1.1a10 - Supports both Stream and Object Rendering."""
 	def __init__(self, node_name, output="", **kwargs):
 		super().__init__(title=f"STREAMS: {node_name}", is_focused=True, **kwargs)
+		# 'output' can now be a string OR a Node Instance
 		self.output = output
 
 	def __rich__(self):
-		# Display the last 12 lines of process output
-		lines = self.output.split("\n")[-12:]
-		content = "\n".join([f"[dim]>[/] {line}" for line in lines if line.strip()])
-		return self.wrap(content if content else "[dim italic]Waiting for telemetry...[/]")
+		# 1. NEW: Object Rendering Hook (The Extension Path)
+		# Check if the output passed in is actually our ThermalNode class
+		if hasattr(self.output, 'render'):
+			# Directly call the node's render (which calls poll internally)
+			return self.wrap(self.output.render())
+
+		# 2. OLD: Stream Rendering Hook (The Text Path)
+		# If it's just a string, we treat it like the old buffer
+		if isinstance(self.output, str):
+			lines = self.output.split("\n")[-12:]
+			content = "\n".join([f"[dim]>[/] {line}" for line in lines if line.strip()])
+			return self.wrap(content if content else "[dim italic]Waiting for telemetry...[/]")
+		
+		return self.wrap("[red]ERR: INVALID TELEMETRY DATA[/]")
 
 class OSWeatherDisplay:
 	@staticmethod
