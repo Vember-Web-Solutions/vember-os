@@ -65,8 +65,7 @@
                 "tamasfe.even-better-toml",
                 "codereviewer14.cyber77-vscode",
                 "GitHub.vscode-pull-request-github",
-                "github.codespaces",
-                "jameslan.yaclock"
+                "github.codespaces"
             ]
         }
     },
