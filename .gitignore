@@ -41,6 +41,7 @@ data/
 # --- [ 5. IDE & SYSTEM ] ---
 # Ignore editor-specific bloat
 .vscode/
+.devcontainer
 .idea/
 .cursor/
 .DS_Store
