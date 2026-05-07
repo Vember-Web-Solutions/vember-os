@@ -5,9 +5,13 @@ description = "Secure, Docker-orchestrated Node Automation Ecosystem"
 requires-python = ">=3.13"
 dependencies = [
     "psutil>=7.2.2",
+    "rich",
+]
+
+[dependency-groups]
+dev = [
     "pytest>=9.0.3",
     "pytest-mock>=3.15.1",
-    "rich",
 ]
 
 [build-system]
@@ -16,6 +20,10 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
 
 [project.scripts]
 sync-ver = "scripts.sync_version:sync"
