@@ -4,7 +4,7 @@ Central execution engine. Orchestrates the dashboard lifecycle,
 asynchronous telemetry streaming, and the input kernel.
 """
 
-import time
+import asyncio
 import os
 import sys
 import queue
@@ -14,94 +14,90 @@ from rich.console import Console
 # Internal Engine Imports
 from engine.input_handler import KeyListener
 from engine.dashboards import MainDashboard
-from engine.core import NodeScanner
+from engine.core import NodeScanner, NodeRunner
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+
 class VemberKernel:
-    def __init__(self):
-        self.console = Console()
-        self.dash = MainDashboard()
-        self.keyboard = KeyListener()
-        self.refresh_rate = 0.05
+	def __init__(self):
+		self.console = Console()
+		self.dash = MainDashboard()
+		self.keyboard = KeyListener()
+		self.refresh_rate = 0.05
 
-    def startup(self):
-        self.dash.nodes = self.dash.scanner.scan()
-        if not self.dash.nodes:
-            # Just trigger a toast instead of killing the OS
-            self.dash.trigger_toast("WARNING: NO NODES DETECTED", duration=100)
-            # Create a dummy node so the MeshMap doesn't crash on index lookup
-            self.dash.nodes = [{"name": "OFFLINE", "path": "", "controls": {}}]
+	async def startup(self):
+		# 🔱 THE FIX: We must 'await' the async scan
+		self.dash.nodes = await self.dash.scanner.scan()
 
-    def _update_telemetry(self):
-        """
-		Drains the Node Runner queue.
-		Implements Frame-Swapping logic via '--- REFRESH ---' tags.
-		"""
-        new_data = self.dash.runner.get_latest_output()
-        if not new_data or not new_data.strip():
-            return 
+		if not self.dash.nodes:
+			self.dash.trigger_toast("WARNING: NO NODES DETECTED", duration=100)
+			self.dash.nodes = [{"name": "OFFLINE", "path": "", "controls": {}}]
 
-        if "--- REFRESH ---" in new_data:
-            # 🔱 STABILITY: Only replace the buffer if we have a full new frame.
-            # This prevents the 'flicker' or 'empty viewport' issues.
-            parts = new_data.split("--- REFRESH ---")
-            frame = parts[-2].strip()
-            if frame:
-                self.dash.output_buffer = frame
-        else:
-            # Standard append mode for logging/linear nodes
-            self.dash.output_buffer += new_data
+	def _update_telemetry(self):
+		# Keep this sync for now unless get_latest_output becomes a coroutine
+		new_data = self.dash.runner.get_latest_output()
+		if not new_data or not new_data.strip():
+			return
 
-    def run(self):
-        # 🔱 Removed manual clear: startup happens before we flip screens
-        self.startup()
+		if "--- REFRESH ---" in new_data:
+			parts = new_data.split("--- REFRESH ---")
+			frame = parts[-2].strip()
+			if frame:
+				self.dash.output_buffer = frame
+		else:
+			self.dash.output_buffer += new_data
 
-        try:
-            # 🔱 THE FIX: Enter the Alternate Screen Buffer
-            # This ensures that when the OS closes, your terminal scrollback is preserved
-            with self.console.screen():
+	async def run(self):
+		# 🔱 Startup is now awaited
+		await self.startup()
 
-                # Initialize the first frame
-                layout_map = self.dash.get_layout_map()
-                frame = self.dash.windfall.compose(layout_map)
+		try:
+			with self.console.screen():
+				layout_map = self.dash.get_layout_map()
+				frame = self.dash.windfall.compose(layout_map)
 
-                # 🔱 Set screen=True in Live for proper sizing inside the alternate buffer
-                with Live(frame, console=self.console, screen=True, auto_refresh=False) as live:
-                    while self.dash.running:
-                        # 1. Input Handoff
-                        try:
-                            key = self.keyboard.input_queue.get_nowait()
-                            self.dash.handle_input(key)
-                        except queue.Empty:
-                            pass
+				with Live(
+					frame, console=self.console, screen=True, auto_refresh=False
+				) as live:
+					while self.dash.running:
+						# 1. Input Handoff
+						try:
+							key = self.keyboard.input_queue.get_nowait()
+							self.dash.handle_input(key)
+						except queue.Empty:
+							pass
 
-                        # 2. Telemetry Bridge (Thermal Matrix -> OS Header)
-                        self._update_telemetry()
+						# 2. Telemetry Bridge
+						self._update_telemetry()
 
-                        # 3. Render Handoff
-                        # Re-calculate the map (handles Toast expiry and selection changes)
-                        current_map = self.dash.get_layout_map()
-                        live.update(
-                            self.dash.windfall.compose(
-                                current_map, width=self.console.width
-                            )
-                        )
-                        live.refresh()
+						# 3. Render
+						current_map = self.dash.get_layout_map()
+						live.update(
+							self.dash.windfall.compose(
+								current_map, width=self.console.width
+							)
+						)
+						live.refresh()
 
-                        time.sleep(self.refresh_rate)
+						# 🔱 Use async sleep to yield control to the event loop
+						await asyncio.sleep(self.refresh_rate)
 
-        except KeyboardInterrupt:
-            pass
-        finally:
-            # 🔱 Cleanup no longer needs console.clear()
-            # The .screen() context manager handles the "wipe" automatically
-            self.cleanup()
+		except KeyboardInterrupt:
+			pass
+		finally:
+			self.cleanup()
 
-    def cleanup(self):
-        self.keyboard.stop()
-        self.dash.runner.stop()
+	def cleanup(self):
+		self.keyboard.stop()
+		# If your new NodeRunner has a shutdown method, call it here
+		if hasattr(self.dash.runner, "shutdown"):
+			self.dash.runner.shutdown()
+		else:
+			self.dash.runner.stop()
+
 
 if __name__ == "__main__":
 	kernel = VemberKernel()
-	kernel.run()
+	# 🔱 Start the OS inside the Asyncio Event Loop
+	asyncio.run(kernel.run())

@@ -1,53 +1,65 @@
 """
-🔱 VEMBER-OS: NODE SCANNER
-Metadata ingestion engine. Performs AST-based analysis of node scripts 
-to extract descriptions, controls, and contextual navigation data.
+🔱 VEMBER-OS: CORE KERNEL
+Sovereign components for Async Discovery and Parallel Execution.
 """
 
 import ast
-import os
-import re
+import asyncio
+import subprocess
+from pathlib import Path
+from concurrent.futures import ProcessPoolExecutor
+from typing import List, Dict, Any
+
+
+# --- GLOBAL WORKER (Required for Multiprocessing Pickling) ---
+def _execute_node_worker(path: str) -> str:
+	"""Isolated worker function for ProcessPoolExecutor."""
+	try:
+		result = subprocess.run(
+			["python", path], capture_output=True, text=True, timeout=30
+		)
+		return result.stdout if result.returncode == 0 else result.stderr
+	except Exception as e:
+		return f"Error: {str(e)}"
+
+
+# --- SOVEREIGN COMPONENTS ---
+
 
 class NodeScanner:
-	def scan(self, directory="nodes"):
-		nodes = []
-		if not os.path.exists(directory): return nodes
+	"""High-speed AST-based metadata ingestion."""
 
-		for file in os.listdir(directory):
-			if file.endswith(".py"):
-				path = os.path.join(directory, file)
-				metadata = self._get_node_metadata(path)
-				
-				# 🔱 Extract Node-Specific Controls for the Contextual Footer
-				nodes.append({
-					"id": file.replace(".py", ""),
-					"name": metadata.get("Title", file.replace(".py", "")),
-					"description": metadata.get("Description", "No description."),
-					"path": path,
-					"controls": metadata.get("Controls", {"ESC": "BACK"}) # Default fallback
-				})
-		return nodes
+	async def scan(self, directory: str = "nodes") -> List[Dict]:
+		path = Path(directory)
+		if not path.is_dir():
+			return []
+		tasks = [self._process_file(f) for f in path.glob("*.py")]
+		return [res for res in await asyncio.gather(*tasks) if res]
 
-	def _get_node_metadata(self, path):
-		"""Peeks at the file to extract Title, Description, and Control Maps."""
-		try:
-			with open(path, "r", encoding="utf-8") as f:
-				content = f.read()
-				tree = ast.parse(content)
-				docstring = ast.get_docstring(tree) or ""
-				
-				metadata = {"Description": "No data.", "Controls": {"ESC": "BACK"}}
-				
-				for line in docstring.split("\n"):
-					if ":" in line:
-						key, value = line.split(":", 1)
-						metadata[key.strip()] = value.strip()
-				
-				# 🔱 Advanced: Search for a 'NODE_CONTROLS' dict in the code itself
-				control_match = re.search(r"NODE_CONTROLS\s*=\s*({.*?})", content, re.DOTALL)
-				if control_match:
-					metadata["Controls"] = ast.literal_eval(control_match.group(1))
-					
-				return metadata
-		except Exception:
-			return {}
+	async def _process_file(self, file_path: Path) -> Dict:
+		"""Reads and parses file metadata without execution."""
+		content = await asyncio.to_thread(file_path.read_text, encoding="utf-8")
+		tree = ast.parse(content)
+		return {
+			"id": file_path.stem,
+			"description": ast.get_docstring(tree) or "No data.",
+			"path": str(file_path),
+		}
+
+
+class NodeRunner:
+	"""Isolated parallel execution engine."""
+
+	def __init__(self, max_workers: int = 4):
+		self.executor = ProcessPoolExecutor(max_workers=max_workers)
+
+	async def run_batch(self, paths: List[str]):
+		"""Dispatches paths to the process pool asynchronously."""
+		loop = asyncio.get_running_loop()
+		tasks = [
+			loop.run_in_executor(self.executor, _execute_node_worker, p) for p in paths
+		]
+		return await asyncio.gather(*tasks)
+
+	def shutdown(self):
+		self.executor.shutdown(wait=True)

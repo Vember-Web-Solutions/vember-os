@@ -6,8 +6,7 @@ application lifecycles, and spatial mesh navigation logic.
 
 from rich.console import Group
 from engine.windfall import Windfall
-from engine.core import NodeScanner
-from engine.runner import NodeRunner
+from engine.core import NodeScanner, NodeRunner
 from engine.widgets import OSHeader, OSToast, OSNodeInspector, OSActionMenu, OSMeshMap, OSFooter
 
 class BaseDashboard:
