@@ -1,0 +1,74 @@
+{
+    "name": "Vember-OS Forge: Donnie Django",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "vember-os",
+    "workspaceFolder": "/app",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                // --- Donnie Django UI & Aesthetic ---
+                "workbench.colorTheme": "Cyber '77",
+                "workbench.activityBar.location": "top",
+                "window.menuBarVisibility": "compact",
+                "workbench.panel.showLabels": false,
+                "workbench.secondarySideBar.defaultVisibility": "hidden",
+                "workbench.editor.empty.hint": "hidden",
+                "explorer.confirmDragAndDrop": false,
+
+                // --- Vember Indentation Law: Tabs, Size 4 ---
+                "editor.tabSize": 4,
+                "editor.insertSpaces": false,
+                "editor.detectIndentation": false,
+                "editor.tabCompletion": "on",
+                "editor.useTabStops": false,
+
+                // --- Format & Save Behavior ---
+                "files.autoSave": "afterDelay",
+                "editor.formatOnSave": true,
+                "editor.formatOnPaste": true,
+                "editor.codeActionsOnSave": {},
+
+                // --- Vember CLI Parity (Linux/Codespace) ---
+                "terminal.integrated.defaultProfile.linux": "Vember CLI",
+                "terminal.integrated.profiles.linux": {
+                    "Vember CLI": {
+                        "path": "bash",
+                        "icon": "terminal-bash",
+                        "color": "terminal.ansiMagenta",
+                        "overrideName": true
+                    }
+                },
+                "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font'",
+                "terminal.integrated.fontSize": 14,
+                "workbench.colorCustomizations": {
+                    "terminal.foreground": "#ffffff"
+                },
+
+                // --- Python Forge Settings ---
+                "python.defaultInterpreterPath": "/app/.venv/bin/python",
+                "python.languageServer": "Pylance",
+                "[python]": {
+                    "editor.defaultFormatter": "ms-python.black-formatter",
+                    "editor.tabSize": 4,
+                    "editor.insertSpaces": false
+                }
+            },
+            "extensions": [
+                "ms-vsliveshare.vsliveshare",
+                "ms-python.python",
+                "ms-python.black-formatter",
+                "ms-python.vscode-pylance",
+                "ms-python.debugpy",
+                "esbenp.prettier-vscode",
+                "oderwat.indent-rainbow",
+                "wholroyd.jinja",
+                "tamasfe.even-better-toml",
+                "codereviewer14.cyber77-vscode",
+                "GitHub.vscode-pull-request-github",
+                "github.codespaces"
+            ]
+        }
+    },
+    "remoteUser": "root",
+    "postCreateCommand": "uv sync && echo \"export PS1='\\n\\[\\e[35m\\]🔱 Vember OS Forge > \\[\\e[m\\] '\" >> ~/.bashrc"
+}

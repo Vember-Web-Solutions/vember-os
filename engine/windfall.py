@@ -5,6 +5,7 @@ orchestrates dynamic widget injection across named render zones.
 """
 
 from rich.layout import Layout
+from rich.console import Console
 from rich.panel import Panel
 from assets.branding import VemberAssets as Assets
 
@@ -35,43 +36,54 @@ class SceneManager:
 		self.current_scene = scene
 		self.current_scene.sync(self.windfall.layout)
 
+
 class Windfall:
 	"""🔱 THE COMPOSITOR: Maintains the physical Grid/Layout structure."""
+
 	def __init__(self):
 		self.layout = Layout()
+		self.manager = SceneManager(self)
 
+	def _setup_responsive_layout(self, width: int):
+		"""Configures the layout skeleton based on terminal width."""
+		# Reset the base layout
+		self.layout = Layout()
+
+		# 1. Vertical Split
 		self.layout.split_column(
-			Layout(name="header", size=3), # Tighter header for Modern UI
+			Layout(name="header", size=3),
 			Layout(name="body"),
 			Layout(name="footer", size=3)
 		)
-		self.layout["body"].split_row(
-		Layout(name="viewport", ratio=3), # Mesh stays on the left (75% width)
-		Layout(name="aside", ratio=1)     # Action Sidebar on the right (25% width)
-	)
 
-	def compose(self, layout_map):
-		"""
-		🔱 THE INJECTOR: Safely maps widgets to named slots.
-		Fixes the KeyError by accessing named slots directly.
-		"""
+		# 2. Horizontal Body Split (Responsive logic)
+		if width > 110:
+			self.layout["body"].split_row(
+				Layout(name="viewport", ratio=3),
+				Layout(name="aside", ratio=1)
+			)
+		else:
+			# Purge 'aside' for small screens to prevent clipping
+			self.layout["body"].split_row(
+				Layout(name="viewport")
+			)
+
+	def compose(self, layout_map, width=120):
+		"""🔱 THE INJECTOR: Rebuilds layout and injects widgets."""
+		self._setup_responsive_layout(width)
+
 		for slot_name, factory in layout_map.items():
 			try:
-				# We access the sub-layout by name directly
+				# Access the named slot from the newly built layout
 				target_layout = self.layout[slot_name]
-				
-				# Execute the lambda to get the Rich renderable
 				content = factory() if callable(factory) else factory
 				target_layout.update(content)
-			except KeyError:
-				# Silently skip slots that don't exist in this specific layout
-				# This prevents the 'KeyError: 0' crash
+			except (KeyError, AttributeError):
+				# This is why the responsive purge works: 
+				# if 'aside' doesn't exist in the layout, we just skip it.
 				continue
 				
 		return self.layout
-		
-		# Initialize the Manager
-		self.manager = SceneManager(self)
 
 	def get_renderable(self):
 		return self.layout

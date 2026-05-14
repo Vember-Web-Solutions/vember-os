@@ -42,10 +42,11 @@ class BaseDashboard:
 		else:
 			self.active_toast = None
 
-		# 2. Sync Telemetry from NodeRunner 
-		# FIX: Synchronized with runner.py method name
-		self.output_buffer = self.runner.get_latest_output()
-		self.sync_telemetry()
+		# Only poll the runner if we aren't using a Class-based Node
+		# This prevents the 'Waiting for telemetry' string overwrite
+		if not self.viewing_node or not hasattr(self, 'active_node_instance'):
+			self.output_buffer = self.runner.get_latest_output()
+			self.sync_telemetry()
 
 	def sync_telemetry(self):
 		if "||DATA|" in self.output_buffer:
@@ -76,6 +77,8 @@ class MainDashboard(BaseDashboard):
 
 	def handle_input(self, key):
 		if not self.nodes: return
+		current_node = self.nodes[self.selected_index]
+
 		if key in ['a', '\x1b[D']: # Left
 			self.selected_index = (self.selected_index - 1) % len(self.nodes)
 		elif key in ['d', '\x1b[C']: # Right
@@ -83,9 +86,22 @@ class MainDashboard(BaseDashboard):
 		elif key in ['\n', '\r']: # Enter
 			if not self.viewing_node:
 				self.viewing_node = True
-				self.runner.execute(self.nodes[self.selected_index]['path'])
+
+				# 🔱 THE v0.1.1a10 UPGRADE:
+				# If the node is the Thermal Matrix, create the OBJECT
+				if current_node['name'] == "Thermal Matrix":
+					from nodes.thermal_matrix import ThermalNode
+					self.active_node_instance = ThermalNode()
+					# We set the buffer to the INSTANCE itself
+					self.output_buffer = self.active_node_instance
+				else:
+					# Legacy behavior for other nodes
+					self.runner.execute(current_node['path'])
+
 		elif key == '\x1b' or key.lower() == 'x': # Back
 			self.viewing_node = False
+			self.active_node_instance = None # Clear the object
+			self.output_buffer = ""
 			self.runner.stop()
 		elif key.lower() == 'q':
 			self.running = False
@@ -93,17 +109,16 @@ class MainDashboard(BaseDashboard):
 	def get_layout_map(self):
 		self.update_lifecycle()
 		current_node = self.nodes[self.selected_index] if self.nodes else None
-		
-		# Check if the runner is currently busy
-		# We assume it's running the 'selected' node if viewing_node is true, 
-		# but we store that index so it persists after detach.
-		running_idx = self.selected_index if self.runner.is_running else None
+		running_idx = self.selected_index if (self.runner.is_running or self.viewing_node) else None
 
-		# 🔱 THE BIG SWAP: If we are 'in' a node, show the console output
+		# Determine what the Inspector sees
+		# If we have a live object, that IS our output.
+		inspector_output = getattr(self, 'active_node_instance', self.output_buffer)
+
 		if self.viewing_node:
 			viewport = lambda: OSNodeInspector(
 				node_name=current_node['name'], 
-				output=self.output_buffer
+				output=inspector_output
 			)
 			footer_actions = current_node.get('controls', {"ESC": "DETACH"})
 		else:

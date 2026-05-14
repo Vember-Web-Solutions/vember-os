@@ -8,6 +8,9 @@
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)
 ![E2EE](https://img.shields.io/badge/Security-E2EE_Encrypted-blueviolet?style=for-the-badge)
 
+> [!TIP]
+> **Access the Forge:** [Visit the Vember-OS Wiki](https://github.com/Vember-Web-Solutions/vember-os/wiki) for documentation and contributor onboarding.
+
 Vember-OS is a secure, containerized environment built for high-stakes automation. 
 By decoupling logic from presentation, Vember-OS utilizes the **Windfall Compositor** to provide a responsive, theme-aware interface across TUI, 2D, and eventually 3D environments.
 
