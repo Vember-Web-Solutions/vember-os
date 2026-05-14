@@ -1,0 +1,36 @@
+name: "🚀 Feature Request"
+description: Propose a new component or capability for the OS layer.
+title: "[FEATURE]: <short description>"
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## New Features
+        Use this template to propose new architectural layers or TUI components.
+  - type: input
+    id: component
+    attributes:
+      label: Target Component
+      placeholder: (e.g., TUI Shell, Kernel Module, Node-based Manager)
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Functional Goal
+      description: What should this feature actually do?
+      placeholder: Describe the goal from a user/system perspective.
+  - type: textarea
+    id: technical-logic
+    attributes:
+      label: Technical Logic & Dependencies
+      description: Mention specific libraries or Debian dependencies.
+      placeholder: (e.g., Requires rich, fits into v0.1.1 architecture)
+  - type: checkboxes
+    id: alignment
+    attributes:
+      label: System Alignment
+      options:
+        - label: "Matches current TUI OS layer design"
+          required: true
