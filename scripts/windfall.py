@@ -1,6 +1,6 @@
 """
 🔱 VEMBER-OS: WINDFALL
-Metadata: Multistage Code Reflection & Surgical Navigation Matrix. (Beta)
+Metadata: Surgical Anatomy Mapping & Escape-Protocol Navigation. (Beta)
 """
 
 import ast
@@ -8,7 +8,6 @@ import os
 import re
 from rich.panel import Panel
 from rich.table import Table
-from rich.tree import Tree
 from rich.live import Live
 from rich.columns import Columns
 from rich.align import Align
@@ -19,17 +18,16 @@ from scripts.vember_setup import TerminalInput
 
 
 class Windfall:
-	"""🔱 WINDFALL (Beta): Modular Code Architect."""
-
 	def __init__(self):
 		self.selection = 0
 		self.file_index = 0
+		self.anatomy_index = 0  # 🔱 Cursor for the Anatomy Table
 		self.window_start = 0
 		self.window_size = 12
-		self.mode = "NAVIGATE"  # NAVIGATE, REFLECT
+		self.mode = "NAVIGATE"  # NAVIGATE, EXPLORE
 		self.focus_path = ""
 		self.metadata = "No Metadata Found."
-		self.class_nodes = []
+		self.nodes = []
 		self.available_files = []
 		self.menu_items = [
 			{"label": "Select Focus", "desc": "Browse modules"},
@@ -40,16 +38,26 @@ class Windfall:
 	def ignite(self, engine, live):
 		self._refresh_file_list()
 		os.system("cls" if os.name == "nt" else "clear")
-
 		while True:
 			live.update(self._generate_layout(), refresh=True)
 			key = TerminalInput.get_key()
+
+			# 🔱 UNIVERSAL ESCAPE / BACK
+			if key in ["esc", "backspace"]:
+				if self.mode == "EXPLORE":
+					self.mode = "NAVIGATE"
+					self.anatomy_index = 0  # Reset anatomy cursor
+					continue
+				elif self.mode == "NAVIGATE":
+					break  # Exit Windfall to Main Menu
 
 			if key == "up":
 				if self.mode == "NAVIGATE":
 					self.file_index = max(0, self.file_index - 1)
 					if self.file_index < self.window_start:
 						self.window_start = self.file_index
+				elif self.mode == "EXPLORE":
+					self.anatomy_index = max(0, self.anatomy_index - 1)
 				else:
 					self.selection = max(0, self.selection - 1)
 
@@ -60,32 +68,27 @@ class Windfall:
 					)
 					if self.file_index >= self.window_start + self.window_size:
 						self.window_start = self.file_index - self.window_size + 1
+				elif self.mode == "EXPLORE":
+					self.anatomy_index = min(
+						len(self.nodes) - 1, self.anatomy_index + 1
+					)
 				else:
 					self.selection = min(len(self.menu_items) - 1, self.selection + 1)
 
 			elif key == "enter":
-				if self.mode == "NAVIGATE":
-					if self.available_files:
-						self.focus_path = self.available_files[self.file_index]
-						self._reflect_file()
-						self.mode = "REFLECT"
-				elif self.mode == "REFLECT":
-					if self.selection == 2:  # Return
-						break
-					if self.selection == 0:  # Back to Select
-						self.mode = "NAVIGATE"
-					if self.selection == 1:  # Re-scan
-						self._reflect_file()
+				if self.mode == "NAVIGATE" and self.available_files:
+					self.focus_path = self.available_files[self.file_index]
+					self._reflect_file()
+					self.mode = "EXPLORE"
+				elif self.mode == "EXPLORE":
+					# Potential for Node 03 (SURGERY) here
+					pass
 
 	def _reflect_file(self):
-		"""Extracts Metadata and Class/Method hierarchy."""
-		self.class_nodes = []
+		self.nodes = []
 		try:
 			with open(self.focus_path, "r", encoding="utf-8") as f:
-				raw_content = f.read()
-				tree = ast.parse(raw_content)
-
-			# Extract Metadata
+				tree = ast.parse(f.read())
 			doc = ast.get_docstring(tree)
 			if doc:
 				meta_match = re.search(r"Metadata:\s*(.*)", doc, re.IGNORECASE)
@@ -95,88 +98,88 @@ class Windfall:
 			else:
 				self.metadata = "[red]Missing Vember DNA Metadata Seal.[/]"
 
-			# Map Classes and Methods
 			for node in ast.iter_child_nodes(tree):
 				if isinstance(node, ast.ClassDef):
 					methods = [
 						n.name for n in node.body if isinstance(n, ast.FunctionDef)
 					]
-					self.class_nodes.append({"name": node.name, "methods": methods})
-				elif isinstance(node, ast.FunctionDef):
-					# Handle top-level functions as well
-					self.class_nodes.append(
-						{"name": f"Func: {node.name}", "methods": []}
+					self.nodes.append(
+						{"type": "CLASS", "name": node.name, "count": len(methods)}
 					)
+				elif isinstance(node, ast.FunctionDef):
+					self.nodes.append({"type": "FUNC", "name": node.name, "count": 1})
 		except Exception as e:
 			self.metadata = f"[red]Error:[/] {str(e)}"
 
 	def _generate_layout(self):
-		# NODE 01: WINDFALL CONTROL
+		# NODE 01 (Static menu for now)
 		menu_table = Table(show_header=False, box=None, padding=(0, 1))
 		for idx, item in enumerate(self.menu_items):
-			cur = "►" if idx == self.selection and self.mode == "REFLECT" else " "
-			sty = (
-				f"bold {Theme.SELECTED}"
-				if idx == self.selection and self.mode == "REFLECT"
-				else "white"
-			)
-			menu_table.add_row(cur, f"[{sty}]{item['label']}[/]")
+			cur = "►" if idx == self.selection and self.mode == "MENU" else " "
+			menu_table.add_row(cur, item["label"])
 
 		left_panel = Panel(
 			menu_table,
 			title=f"[{Theme.TITLE}]🔱 WINDFALL[/]",
-			subtitle=f"[dim]{self.mode}[/]",
 			border_style=Theme.ACTION,
 			width=32,
 		)
 
-		# NODE 02: THE DYNAMIC BATTLEFIELD
+		# NODE 02 (Dynamic Battlefield)
 		if self.mode == "NAVIGATE":
 			title = "SELECT FOCUS"
 			content = Table(box=None, show_header=False)
 			visible_files = self.available_files[
 				self.window_start : self.window_start + self.window_size
 			]
-
 			for i, f in enumerate(visible_files):
 				abs_idx = self.window_start + i
 				cur = "►" if abs_idx == self.file_index else " "
 				sty = f"bold {Theme.ACCENT}" if abs_idx == self.file_index else "dim"
 				content.add_row(cur, f"[{sty}]{f}[/]")
-
-			if self.window_start + self.window_size < len(self.available_files):
-				content.add_row(" ", "[dim]... more files below[/]")
-
 			renderable_content = content
 		else:
-			title = "CODE REFLECTOR"
-			# Build the reflection group
+			title = "CODE ANATOMY"
 			meta_text = Text(f"📜 {self.metadata}\n", style="italic yellow")
-
-			node_tree = Tree(
-				f"[{Theme.ACCENT}]📦 {os.path.basename(self.focus_path)}[/]"
+			table = Table(
+				box=None,
+				show_header=True,
+				header_style=f"bold {Theme.ACCENT}",
+				padding=(0, 1),
 			)
-			for cls in self.class_nodes:
-				c_node = node_tree.add(f"[bold cyan]Class:[/] {cls['name']}")
-				for m in cls["methods"][:5]:  # Preview first 5 methods
-					c_node.add(f"[dim]└─[/] [yellow]Method:[/] {m}")
+			table.add_column(" ", width=2)
+			table.add_column("TYPE", style="dim", width=8)
+			table.add_column("OBJECT NAME", style="white")
+			table.add_column("METHODS", justify="right", style="cyan")
 
-			# Use Group to combine the Metadata text and the Tree
-			renderable_content = Group(meta_text, node_tree)
+			for idx, node in enumerate(self.nodes):
+				cur = "►" if idx == self.anatomy_index else " "
+				row_style = (
+					f"bold {Theme.SELECTED}" if idx == self.anatomy_index else "white"
+				)
+				type_label = (
+					"[cyan]CLASS[/]" if node["type"] == "CLASS" else "[green]FUNC[/]"
+				)
+				table.add_row(
+					cur,
+					type_label,
+					f"[{row_style}]{node['name']}[/]",
+					str(node["count"]),
+				)
+
+			renderable_content = Group(meta_text, table)
 
 		right_panel = Panel(
 			Align.left(renderable_content),
 			title=f"[{Theme.ACCENT}]{title}[/]",
-			border_style=Theme.ACTION,
+			border_style=Theme.ACTION if self.mode != "NAVIGATE" else Theme.SUBTITLE,
 			width=46,
 			padding=(1, 2),
 		)
-
 		connector = Table.grid()
 		connector.add_row("")
 		connector.add_row("")
 		connector.add_row(f" [{Theme.ACCENT}]══▶[/] ")
-
 		return Align.center(
 			Columns([left_panel, Align.center(connector), right_panel], align="center")
 		)
