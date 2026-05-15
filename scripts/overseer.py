@@ -1,3 +1,8 @@
+"""
+🔱 VEMBER-OS: OVERSEER
+Metadata: Enter summary of OVERSEER functionality here.
+"""
+
 # scripts/overseer.py (Hardened Vember Edition)
 import subprocess
 import json

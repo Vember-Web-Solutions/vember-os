@@ -31,5 +31,6 @@ pythonpath = ["."]
 
 [project.scripts]
 sync-ver = "scripts.sync_version:sync"
-vember-review = "scripts.gatekeeper:main"
-vember-setup = "vember_setup:main"
+architect = "scripts.architect:main"
+vember-setup = "scripts.vember_setup:main"
+vember = "scripts.vember_cli:main"

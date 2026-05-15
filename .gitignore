@@ -54,3 +54,6 @@ Thumbs.db
 ops/private_*
 .env
 .envrc
+
+# Vember OS Local Logs
+logs/

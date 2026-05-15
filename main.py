@@ -1,4 +1,11 @@
 """
+🔱 VEMBER-OS: MAIN
+Metadata: Enter summary of MAIN functionality here.
+"""
+"""
+🔱 VEMBER OS
+"""
+"""
 🔱 VEMBER-OS: KERNEL
 Central execution engine. Orchestrates the dashboard lifecycle, 
 asynchronous telemetry streaming, and the input kernel.

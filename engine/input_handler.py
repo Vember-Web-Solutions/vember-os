@@ -1,4 +1,11 @@
 """
+🔱 VEMBER-OS: INPUT_HANDLER
+Metadata: Enter summary of INPUT_HANDLER functionality here.
+"""
+"""
+🔱 VEMBER OS
+"""
+"""
 🔱 VEMBER-OS: INPUT HANDLER
 Low-level terminal abstraction. Utilizes termios and select for 
 non-blocking, raw-mode keyboard event capturing.

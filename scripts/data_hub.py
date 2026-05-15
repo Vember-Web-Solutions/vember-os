@@ -1,12 +1,13 @@
 """
-🔱 VEMBER-OS: DATAHUB SERVICE
-The central nervous system for state persistence. Provides a standardized 
+🔱 VEMBER-OS: DATA_HUB
+Metadata: The central nervous system for state persistence. Provides a standardized 
 API for telemetry ingestion and node synchronization.
 
 Core Responsibilities:
 * Atomic JSON operations with metadata injection.
 * Data decoupling for multi-node visualization.
 """
+
 
 import json
 import os

@@ -1,4 +1,11 @@
 """
+🔱 VEMBER-OS: CORE
+Metadata: Enter summary of CORE functionality here.
+"""
+"""
+🔱 VEMBER OS
+"""
+"""
 🔱 VEMBER-OS: CORE KERNEL
 Sovereign components for Async Discovery and Parallel Execution.
 """

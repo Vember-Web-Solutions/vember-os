@@ -1,4 +1,11 @@
 """
+🔱 VEMBER-OS: BRANDING
+Metadata: Enter summary of BRANDING functionality here.
+"""
+"""
+🔱 VEMBER OS
+"""
+"""
 🔱 VEMBER-OS: ASSET REGISTRY
 Centralized design system. Defines the visual identity, iconography, 
 and thematic color palettes for widgets and mesh navigation.
