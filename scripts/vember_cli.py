@@ -95,97 +95,98 @@ class TerminalInput:
 
 
 class VemberCLI:
-	"""Live interactive menu controller enforcing the High-Five Method Rule."""
+    """Live interactive menu controller enforcing the High-Five Method Rule."""
 
-	def __init__(self):
-		self.console = Console()
-		self.selection = 0
-		# New state variables for the Dual-Node UI
-		self.active_node = None
-		self.node_output = ""
-		self.is_processing = False
+    def __init__(self):
+        self.console = Console()
+        self.selection = 0
+        # New state variables for the Dual-Node UI
+        self.active_node = None
+        self.node_output = ""
+        self.is_processing = False
 
-		self.menu_items = [
-			{
-				"label": "Setup Local Forge",
-				"cmd": "SETUP",
-				"desc": "Initialize system dependencies",
-			},
-			{
-				"label": "Review Codebase",
-				"cmd": "ARCHITECT",
-				"desc": "Audit architectural metadata",
-			},
-			{
-				"label": "Vanguard Integrity",
-				"cmd": "VANGUARD",
-				"desc": "Audit dependencies & logic tests",
-			},
-			{
-				"label": "Sync Versions",
-				"cmd": "SYNC_VER",
-				"desc": "Align project versioning",
-			},
-			{
-				"label": "Commands & Help",
-				"cmd": "CODEX",
-				"desc": "Frequently used commands",
-			},
-			{
-				"label": "Exit Developer Console",
-				"cmd": "EXIT",
-				"desc": "Sever connection to Forge",
-			},
-		]
+        self.menu_items = [
+            {
+                "label": "Setup Local Forge",
+                "cmd": "SETUP",
+                "desc": "Initialize system dependencies",
+            },
+            {
+                "label": "Review Codebase",
+                "cmd": "ARCHITECT",
+                "desc": "Audit architectural metadata",
+            },
+            {
+                "label": "Vanguard Integrity",
+                "cmd": "VANGUARD",
+                "desc": "Audit dependencies & logic tests",
+            },
+            # 🔱 The 'Beta' Look
+            {
+                "label": f"Windfall Engine [bold red]NEW[/] [bold purple](Beta)[/]",
+                "cmd": "WINDFALL",
+                "desc": "Code Reflection & Generative Matrix",
+            },
+            {
+                "label": "Commands & Help",
+                "cmd": "CODEX",
+                "desc": "Frequently used commands",
+            },
+            {
+                "label": "Exit Developer Console",
+                "cmd": "EXIT",
+                "desc": "Sever connection to Forge",
+            },
+        ]
 
-	def _generate_layout(self) -> Align:
-		"""The Master Engine: Merged with overflow protection."""
-		# 1. Setup the Left Panel
-		welcome_msg = f"[{Theme.PRIMARY}]Welcome, [/{Theme.PRIMARY}][{Theme.USER_COLOR}]{Theme.USER_NAME}[/][{Theme.PRIMARY}]. Select a protocol to engage.[/]"
+    def _generate_layout(self) -> Align:
+        """The Master Engine: Merged with overflow protection."""
+        # 1. Setup the Left Panel
+        welcome_msg = f"[{Theme.PRIMARY}]Welcome, [/{Theme.PRIMARY}][{Theme.USER_COLOR}]{Theme.USER_NAME}[/][{Theme.PRIMARY}]. Select a protocol to engage.[/]"
 
-		menu_table = Table(show_header=False, box=None, padding=(0, 2), pad_edge=False)
-		menu_table.add_column("Cursor", justify="right", style=Theme.ACCENT)
-		# Added no_wrap=True to prevent label wrapping
-		menu_table.add_column("Label", no_wrap=True)
+        menu_table = Table(show_header=False, box=None, padding=(0, 2), pad_edge=False)
+        menu_table.add_column("Cursor", justify="right", style=Theme.ACCENT)
+        # Added no_wrap=True to prevent label wrapping
+        menu_table.add_column("Label", no_wrap=True)
 
-		menu_table.add_row("", welcome_msg)
-		menu_table.add_row("", "")
+        menu_table.add_row("", welcome_msg)
+        menu_table.add_row("", "")
 
-		for idx, item in enumerate(self.menu_items):
-			if idx == self.selection:
-				menu_table.add_row("►", f"[bold {Theme.SELECTED}]{item['label']}[/]")
-			else:
-				color = Theme.SECONDARY if "Windfall" in item["label"] else "white"
-				menu_table.add_row("", f"[{color}]{item['label']}[/]")
-			if idx == len(self.menu_items) - 2:
-				menu_table.add_row("", "")
+        for idx, item in enumerate(self.menu_items):
+            if idx == self.selection:
+                menu_table.add_row("►", f"[bold {Theme.SELECTED}]{item['label']}[/]")
+            else:
+                color = Theme.SECONDARY if "Windfall" in item["label"] else "white"
+                menu_table.add_row("", f"[{color}]{item['label']}[/]")
+            if idx == len(self.menu_items) - 2:
+                menu_table.add_row("", "")
 
-		current_desc = self.menu_items[self.selection]["desc"]
-		menu_table.add_row("", "")
-		menu_table.add_row("", f"[{Theme.SUBTITLE}][italic]{current_desc}[/italic][/]")
+        current_desc = self.menu_items[self.selection]["desc"]
+        menu_table.add_row("", "")
+        menu_table.add_row("", f"[{Theme.SUBTITLE}][italic]{current_desc}[/italic][/]")
 
-		# Dynamic Width Calculation (Slimmer when side-node is active)
-		panel_kwargs = Theme.get_panel_style().copy()
-		panel_kwargs["width"] = 40 if self.active_node else 52
+        # Dynamic Width Calculation (Slimmer when side-node is active)
+        panel_kwargs = Theme.get_panel_style().copy()
+        panel_kwargs["width"] = 40 if self.active_node else 52
 
-		action_bar = (
+        action_bar = (
 			f"[{Theme.ACCENT}]Navigate: [↑/↓][/] | [{Theme.ACTION}]Launch: [Enter][/]"
 		)
 
-		left_panel = Panel(
+        left_panel = Panel(
 			menu_table,
 			title=f"[{Theme.TITLE}]🔱 VEMBER OS // DEVELOPER CONSOLE[/]",
 			subtitle=action_bar,
 			**panel_kwargs,
 		)
 
-		# 2. Build the Right Node (Audit/Architect)
-		if self.active_node:
-			connector = Table.grid(expand=True)
-			connector.add_row(""); connector.add_row(""); connector.add_row(f" [{Theme.ACCENT}]══▶[/] ")
+        # 2. Build the Right Node (Audit/Architect)
+        if self.active_node:
+            connector = Table.grid(expand=True)
+            connector.add_row(""); connector.add_row(""); connector.add_row(f" [{Theme.ACCENT}]══▶[/] ")
 
-			# Slim the right panel to 38 to ensure 40 + 38 fits on standard 80-char terminals
-			right_panel = Panel(
+            # Slim the right panel to 38 to ensure 40 + 38 fits on standard 80-char terminals
+            right_panel = Panel(
 				self.node_output,
 				title=f"[{Theme.ACCENT}]{self.active_node}[/]",
 				border_style=Theme.ACCENT if self.is_processing else Theme.ACTION,
@@ -193,114 +194,106 @@ class VemberCLI:
 				subtitle="[dim]Protocol Active[/]",
 				padding=(0, 1)
 			)
-			return Align.center(
+            return Align.center(
 				Columns(
 					[left_panel, Align.center(connector), right_panel], align="center"
 				)
 			)
 
-		return Align.center(left_panel)
+        return Align.center(left_panel)
 
-	def _execute(self, cmd_id: str) -> None:
-		"""Routes execution to specialized engines or shell commands."""
+    def _execute(self, cmd_id: str) -> None:
+        """The Forge Dispatcher: Routing commands to specialized Battlefield nodes."""
 
-		if cmd_id == "EXIT":
-			sys.exit(0)
+        if cmd_id == "EXIT":
+            sys.exit(0)
 
-		# 🔱 SETUP ENGINE
-		if cmd_id == "SETUP":
-			from scripts.vember_setup import SetupEngine
-			SetupEngine().run()
-			return
+        # 🔱 SETUP ENGINE
+        if cmd_id == "SETUP":
+            from scripts.vember_setup import SetupEngine
 
-		# 🔱 ARCHITECT ENGINE
-		if cmd_id == "ARCHITECT":
-			from scripts.architect import Architect
-			from rich.live import Live
-			# Hand over control to the Architect's sub-menu loop
-			with Live(None, console=self.console, auto_refresh=False) as live:
-				Architect().ignite(self, live)
-			return
+            SetupEngine().run()
+            return
 
-		# 🔱 VANGUARD ENGINE (The Phase 2 Heart)
-		if cmd_id == "VANGUARD":
-			from scripts.vanguard import Vanguard
-			from rich.live import Live
-			# Hand over control to the Vanguard's Integrity HUD
-			with Live(None, console=self.console, auto_refresh=False) as live:
-				Vanguard().ignite(self, live)
-			return
+        # 🔱 ARCHITECT ENGINE
+        if cmd_id == "ARCHITECT":
+            from scripts.architect import Architect
+            from rich.live import Live
 
-		# 🔱 CODEX / HELP (Standard Battlefield Summon)
-		if cmd_id == "CODEX":
-			self.active_node = "Vember Codex"
-			self.node_output = CodexManager.render_help()
-			# This logic remains inside the main CLI loop for quick viewing
-			return
+            with Live(None, console=self.console, auto_refresh=False) as live:
+                Architect().ignite(self, live)
+            return
 
-		# Fallback for standard shell commands
-		os.system("cls" if os.name == "nt" else "clear")
-		subprocess.run(cmd_id, shell=True)
-		input("\nPress ENTER to return...")
+        # 🔱 VANGUARD ENGINE
+        if cmd_id == "VANGUARD":
+            from scripts.vanguard import Vanguard
+            from rich.live import Live
 
-	def _render_menu(self) -> None:
-		"""Standardized refresh call for the Vember UI."""
-		os.system("cls" if os.name == "nt" else "clear")
-		self.console.print(self._generate_layout())
-		self.console.print(Align.center(f"[dim]{Theme.VERSION}[/]"))
+            with Live(None, console=self.console, auto_refresh=False) as live:
+                Vanguard().ignite(self, live)
+            return
 
-	def _handle_selection(self) -> bool:
-		"""Routes the chosen command. Returns False if the OS should exit."""
-		target = self.menu_items[self.selection]["cmd"]
+        # 🔱 WINDFALL ENGINE (Phase 3 Rebirth)
+        if cmd_id == "WINDFALL":
+            from scripts.windfall import Windfall
+            from rich.live import Live
 
-		if target == "EXIT":
-			return False
-		elif target == "WINDFALL":
-			sys.stdout.write("\033[?25h")
-			sys.stdout.flush()
+            with Live(None, console=self.console, auto_refresh=False) as live:
+                Windfall().ignite(self, live)
+            return
 
-			os.system("cls" if os.name == "nt" else "clear")
-			self.console.print(
-				Panel(
-					"[bold magenta]WINDFALL ENGINE[/bold magenta]\n\n"
-					"[dim]Status: AWAITING DEPLOYMENT[/dim]\n\n"
-					"The AI-driven GUI generation matrix is currently under construction.\n"
-					"Soon, this module will write Python code dynamically to assemble your UI.",
-					border_style="magenta",
-					padding=(1, 3),
-				)
-			)
-			input("\nPress ENTER to return...")
+        # 🔱 CODEX / HELP
+        if cmd_id == "CODEX":
+            self.active_node = "Vember Codex"
+            self.node_output = CodexManager.render_help()
+            return
 
-			sys.stdout.write("\033[?25l")
-			sys.stdout.flush()
-		else:
-			self._execute(target)
+        # Fallback for standard shell commands
+        os.system("cls" if os.name == "nt" else "clear")
+        subprocess.run(cmd_id, shell=True)
+        input("\nPress ENTER to return...")
 
-		return True
+    def _render_menu(self) -> None:
+        """Standardized refresh call for the Vember UI."""
+        os.system("cls" if os.name == "nt" else "clear")
+        self.console.print(self._generate_layout())
+        self.console.print(Align.center(f"[dim]{Theme.VERSION}[/]"))
 
-	def run(self) -> None:
-		"""The main interactive capture loop managing global cursor state."""
-		sys.stdout.write("\033[?25l")
-		sys.stdout.flush()
+    def _handle_selection(self) -> bool:
+        """Standardizes selection routing and removes legacy placeholders."""
+        target = self.menu_items[self.selection]
+        cmd_id = target["cmd"]
 
-		try:
-			while True:
-				self._render_menu()
-				key = TerminalInput.get_key()
+        if cmd_id == "EXIT":
+            return False
 
-				if key == "up":
-					self.selection = max(0, self.selection - 1)
-				elif key == "down":
-					self.selection = min(len(self.menu_items) - 1, self.selection + 1)
-				elif key == "enter":
-					should_continue = self._handle_selection()
-					if not should_continue:
-						break
-		finally:
-			os.system("cls" if os.name == "nt" else "clear")
-			sys.stdout.write("\033[?25h")
-			sys.stdout.flush()
+        # 🔱 Removed the legacy 'if cmd_id == "WINDFALL"' block that was here
+        # It now flows directly into the _execute routing below
+        self._execute(cmd_id)
+        return True
+
+    def run(self) -> None:
+        """The main interactive capture loop managing global cursor state."""
+        sys.stdout.write("\033[?25l")
+        sys.stdout.flush()
+
+        try:
+            while True:
+                self._render_menu()
+                key = TerminalInput.get_key()
+
+                if key == "up":
+                    self.selection = max(0, self.selection - 1)
+                elif key == "down":
+                    self.selection = min(len(self.menu_items) - 1, self.selection + 1)
+                elif key == "enter":
+                    should_continue = self._handle_selection()
+                    if not should_continue:
+                        break
+        finally:
+            os.system("cls" if os.name == "nt" else "clear")
+            sys.stdout.write("\033[?25h")
+            sys.stdout.flush()
 
 
 def main() -> None:
