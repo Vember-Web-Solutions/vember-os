@@ -32,3 +32,4 @@ pythonpath = ["."]
 [project.scripts]
 sync-ver = "scripts.sync_version:sync"
 vember-review = "scripts.gatekeeper:main"
+vember-setup = "vember_setup:main"
