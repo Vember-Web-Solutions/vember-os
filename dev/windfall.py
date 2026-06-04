@@ -51,7 +51,7 @@ class NodeCluster:
 		return "CLUSTER_STABLE"
 
 	def compile(self):
-		T = VemberAssets.THEME
+		T = VemberAssets.ACTIVE_THEME
 		
 		# 1. Fetch
 		nexus_node = self._active_sprites.get("nexus_node")

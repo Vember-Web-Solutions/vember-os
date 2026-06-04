@@ -16,16 +16,13 @@ Context Actions:
 ================================================================================
 """
 
-import json, subprocess
-from pathlib import Path
-
 from rich.panel import Panel
 from rich.table import Table
 from rich.columns import Columns
 from rich.align import Align
 from assets.branding import VemberAssets
 
-Theme = VemberAssets.THEME
+Theme = VemberAssets.ACTIVE_THEME
 
 
 class Vanguard:
@@ -36,9 +33,6 @@ class Vanguard:
 		self.active_node = "Environmental HUD"
 		self.node_output = "[dim]Awaiting integrity scan...[/]"
 		self.is_processing = False
-
-		self.test_results = {"passed": 0, "failed": 0, "total": 0}
-
 		self.test_failures = []
 		self.menu_items = [
 			{"label": "Audit Packages", "desc": "Map uv managed dependencies"},
@@ -70,7 +64,7 @@ class Vanguard:
 			Panel(
 				self.node_output,
 				title=f"[{Theme.primary}]INTEGRITY HUD[/]",
-				border_style=Theme.primary if self.is_processing else Theme.secondary,
+				border_style=Theme.primary if self.is_processing else Theme.border_action,
 				width=46,
 				padding=(1, 2),
 			)
@@ -82,44 +76,3 @@ class Vanguard:
 		return Align.center(
 			Columns([left_panel, Align.center(connector), right_stack], align="center")
 		)
-
-	def load_test_results(self):
-		report_path = Path("exports/test_results.json")
-		try:
-			if report_path.exists():
-				with open(report_path, "r") as f:
-					data = json.load(f)
-					
-					# Extract Data
-					summary = data.get("summary", {})
-					metadata = data.get("metadata", {})
-					ts = metadata.get("timestamp", "Unknown")
-					
-					# Visual feedback
-					self.test_results["passed"] = summary.get("passed", 0)
-					self.test_results["failed"] = summary.get("failed", 0)
-					
-					self.node_output = (
-						f"Integrity Scan: [green]{self.test_results["passed"]} Passed[/] | [red]{self.test_results["failed"]} Failed[/]\n"
-						f"[dim]Last scan: {ts}[/]"
-					)
-		except Exception:
-			self.node_output = "[bold red]Error parsing integrity report.[/]"
-
-	def run_integrity_scan(self):
-		"""Engages pytest and pipes the report to the exports district."""
-		self.is_processing = True
-		self.node_output = "[yellow]Scanning district...[/]"
-
-		try:
-			# Engage the integrity scan
-			result = subprocess.run(
-				["uv", "run", "pytest", "--json-report", "--json-report-file=exports/test_results.json", "tests/"],
-				capture_output=True,
-				text=True
-			)
-			self.load_test_results()
-		except Exception as e:
-			self.node_output = f"[bold red]SCAN FAILED:[/] {str(e)}"
-		finally:
-			self.is_processing = False

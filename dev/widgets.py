@@ -24,7 +24,7 @@ from assets.branding import VemberAssets
 
 class ForgeWidgetBase:
 	def __init__(self):
-		self.theme = VemberAssets.THEME
+		self.theme = VemberAssets.ACTIVE_THEME
 
 
 class ForgeIdentity(ForgeWidgetBase):
@@ -61,7 +61,7 @@ class ForgeDockerTelemetry(ForgeWidgetBase):
 	"""🐳 Telemetry with hardcoded Cyan styling."""
 
 	def get_view(self, size_data: dict):
-		T = VemberAssets.THEME
+		T = VemberAssets.ACTIVE_THEME
 		total = size_data.get("total", "OFFLINE")
 
 		# 🔱 HARDCODED CYAN: Using a specific hex code for consistent blue
@@ -81,7 +81,7 @@ class ForgeHeader(ForgeWidgetBase):
 		self.context_name = context_name
 
 	def __rich__(self):
-		T = VemberAssets.THEME
+		T = VemberAssets.ACTIVE_THEME
 
 		# 1. Gather Data
 		size = (
@@ -121,7 +121,7 @@ class ForgePicker(ForgeWidgetBase):
 		self.active = active
 
 	def __rich__(self):
-		T = VemberAssets.THEME
+		T = VemberAssets.ACTIVE_THEME
 		table = Table(box=None, show_header=False, expand=True)
 		table.add_column("Marker", width=2)
 		table.add_column("Content")
@@ -152,7 +152,7 @@ class ForgeFooter(ForgeWidgetBase):
 		self.current_cluster_actions = actions or []
 
 	def __rich__(self):
-		T = VemberAssets.THEME
+		T = VemberAssets.ACTIVE_THEME
 		actions = []
 
 		# Use the actions stored in instance state
