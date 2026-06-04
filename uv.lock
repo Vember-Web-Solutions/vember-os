@@ -465,6 +465,7 @@ dependencies = [
     { name = "docker" },
     { name = "psutil" },
     { name = "pynput" },
+    { name = "pytest" },
     { name = "pytest-json-report" },
     { name = "rich" },
 ]
@@ -483,6 +484,7 @@ requires-dist = [
     { name = "docker", specifier = ">=7.1.0" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pynput", specifier = ">=1.8.2" },
+    { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-json-report", specifier = ">=1.5.0" },
     { name = "rich" },
 ]
