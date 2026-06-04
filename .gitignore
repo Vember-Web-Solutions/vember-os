@@ -43,6 +43,7 @@ data/
 .vscode/
 .devcontainer
 .continue
+exports/
 .idea/
 .cursor/
 .DS_Store
