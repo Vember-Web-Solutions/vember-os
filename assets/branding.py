@@ -23,18 +23,22 @@ class VemberTheme:
     alert: str
     text: str
     dim: str
+    cursor: str
+    selection: str
     bg: str = "#000000"
 
+
 class VemberAssets:
-    # 🎨 THEMES
     THEME = VemberTheme(
-        primary="#00f2ff",    # Electric Cyan
-        secondary="#0066ff",  # Deep Cobalt
-        success="#00ff95",    # Neon Mint
-        warning="#ffcc00",    # Warning Amber
-        alert="#ff3300",      # Plasma Red
-        text="#ffffff",       # Pure White
-        dim="#444444"         # Graphite Grey
+        primary="#00f2ff",
+        secondary="#0066ff",
+        success="#00ff95",
+        warning="#ffcc00",
+        alert="#ff3300",
+        text="#ffffff",
+        dim="#444444",
+        cursor="#ffff00",  # Example: Electric Yellow
+        selection="#ffffff",  # Example: Pure White
     )
 
     # 🖼️ ICONS (Universal Registry)
@@ -44,14 +48,14 @@ class VemberAssets:
         NODE   = "⬢"
         HUB    = "🕸️"
         LINK   = "🔗"
-        
+
         # Atmospheric (Stratos-Link)
         TEMP     = "🌡️"
         OVERCAST = "☁️"
         SUNNY    = "☀️"
         SNOW     = "❄️"
         RAIN     = "🌧️"
-        
+
         # System (Thermal Matrix)
         CPU    = "⚡"
         RAM    = "💾"

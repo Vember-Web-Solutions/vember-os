@@ -18,7 +18,7 @@ from rich.align import Align
 from assets.branding import VemberAssets
 
 # Map the active theme from the centralized registry
-Theme = VemberAssets.ACTIVE_THEME
+Theme = VemberAssets.THEME
 
 
 class ArchitectEngine:
