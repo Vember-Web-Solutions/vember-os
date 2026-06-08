@@ -45,6 +45,7 @@ from dev.windfall import NodeCluster  # 🔱 STREAMLINED: Lightened layout compo
 from dev.views import SceneRouter, DeveloperView
 from dev.de import DockerEngine
 from dev.vanguard import Vanguard
+from dev.factory import ForgeFactory
 
 class VemberConsole:
 	"""🔱 THE CORE CLI: Manages the dynamic sprite lifecycle of active layout nodes."""
@@ -100,6 +101,7 @@ class VemberConsole:
 		self.shutdown_flag: bool = False
 		self.master_layout = None
 		self.router = SceneRouter(self.controller)
+		self.factory = ForgeFactory()
 		self.view_container = DeveloperView(self)
 
 		self.current_scene = "SETUP"
@@ -179,7 +181,7 @@ class VemberConsole:
 		with Live(self.master_layout, refresh_per_second=20, screen=True) as live:
 			while not self.shutdown_flag:
 				# 3. Update Display
-				self.master_layout['header'].update(ForgeHeader(...))
+				self.master_layout['header'].update(self.header)
 				self.master_layout['body'].update(self.view_container.compose_view(self, self.current_scene))
 				time.sleep(0.05)
 
@@ -190,7 +192,7 @@ class VemberConsole:
 			selected_node = self.controller.menu_items[self.controller.selection]
 
 			# 2. THE RITUAL OF ENTRY: Handle specific node initialization
-			if selected_node == "Architect":
+			if selected_node.get("cmd") == "ARCHITECT":
 				# Initialize with a FOCUS phase to prevent NoneType crash [1]
 				self.active_engine = ArchitectEngine()
 			else:

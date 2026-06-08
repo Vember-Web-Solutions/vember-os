@@ -77,7 +77,7 @@ class MainDashboard(BaseDashboard):
 	def __init__(self):
 		super().__init__()
 		self.scanner = NodeScanner()
-		self.nodes = self.scanner.scan()
+		self.nodes = []
 		self.selected_index = 0
 		self.viewing_node = False
 

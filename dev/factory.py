@@ -81,3 +81,40 @@ class ForgeFactory:
 
 		# 🔱 ALIGN FIX: Wrapping the Panel ensures it is dead-center
 		return Align.center(menu_panel)
+
+	@staticmethod
+	def create_inspector_panel(controller):
+		T = VemberAssets.ACTIVE_THEME
+		selected = controller.menu_items[controller.selection]
+		content = (
+			f" [{T.cursor}]►[/] [{T.selection}]{selected['label']}[/]\n"
+			f"    [dim]{selected.get('desc', '')}[/]\n\n"
+			f" [dim]Press ENTER to ignite module contract[/]"
+		)
+		return Panel(
+			content,
+			title=f" [bold {T.warning}]ACTION NODE[/] ",
+			title_align="center",
+			box=box.ROUNDED,
+			border_style=T.border_action,
+			width=65,
+			padding=(1, 1),
+		)
+
+	@staticmethod
+	def create_telemetry_panel(controller):
+		T = VemberAssets.ACTIVE_THEME
+		status = getattr(controller, "status_msg", "Awaiting telemetry...")
+		capacity = getattr(controller, "capacity_status", "UNKNOWN")
+		content = (
+			f" ┠─ STATUS: [bold {T.success}]{status}[/]\n"
+			f" ┠─ CLUSTER: [bold {T.primary}]{capacity}[/]"
+		)
+		return Panel(
+			content.rstrip(),
+			title=f" [bold {T.primary}]REPORT NODE[/] ",
+			title_align="center",
+			box=box.ROUNDED,
+			border_style=T.primary,
+			width=65,
+		)
