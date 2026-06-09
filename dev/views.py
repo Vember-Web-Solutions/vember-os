@@ -147,8 +147,14 @@ class SceneRouter:
 
 		# 2. CACHE INITIALIZATION: Instantiate scenes only when needed (3% Idle Target)
 		if actual_key not in self._cache:
+			from dev.scenes import ArchitectScene, VanguardScene
+
 			if actual_key == "dev":
 				self._cache[actual_key] = MainMenuScene(self.controller, None)
+			elif actual_key == "architect":
+				self._cache[actual_key] = ArchitectScene(self.controller)
+			elif actual_key == "vanguard":
+				self._cache[actual_key] = VanguardScene(self.controller)
 
 		return self._cache.get(actual_key)
 
@@ -159,8 +165,16 @@ class DeveloperView(BaseView):
 	def compose_view(self, controller, current_scene) -> RenderableType:
 		# 1. Boilerplate: Header and Footer
 		# Ensure your footer is accessible on the controller object
-		header = ForgeHeader(title="DEVELOPER CONSOLE", version="v1.0.6-stable")
-		footer = ForgeFooter(actions=controller.footer.current_cluster_actions)
+		header = ForgeHeader(
+			docker_engine=controller.docker_engine,
+			context_name="DEVELOPER_CORE",
+			title="DEVELOPER CONSOLE",
+			version="v1.0.6-stable",
+		)
+		footer_actions = controller.footer.current_cluster_actions or getattr(
+			current_scene, "footer_actions", None
+		)
+		footer = ForgeFooter(actions=footer_actions)
 
 		cluster = NodeCluster(None)
 

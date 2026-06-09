@@ -104,7 +104,7 @@ class VemberConsole:
 		self.factory = ForgeFactory()
 		self.view_container = DeveloperView(self)
 
-		self.current_scene = "SETUP"
+		self.current_scene = self.router.get_view("dev")
 
 		self.capacity_status: str = "CLUSTER_STABLE"
 
@@ -228,6 +228,14 @@ class VemberConsole:
 		except Exception as e:
 			self.log_debug(f"PASSPORT_FAILURE: {str(e)}")
 			return None
+
+	def transition_to_view(self, scene_key: str) -> None:
+		"""Route the active viewport back to a registered scene."""
+		scene = self.router.get_view(scene_key)
+		if scene is not None:
+			self.current_scene = scene
+			self.active_cmd = None
+			self.status_msg = f"VIEW_TRANSITION: Routed to {scene_key.upper()}"
 
 	def switch_node(self, node_name):
 		"""The central hub for state transitions."""
