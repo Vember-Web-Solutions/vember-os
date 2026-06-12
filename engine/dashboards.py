@@ -77,7 +77,7 @@ class MainDashboard(BaseDashboard):
 	def __init__(self):
 		super().__init__()
 		self.scanner = NodeScanner()
-		self.nodes = self.scanner.scan()
+		self.nodes = []
 		self.selected_index = 0
 		self.viewing_node = False
 
@@ -128,7 +128,11 @@ class MainDashboard(BaseDashboard):
 			)
 			footer_actions = current_node.get('controls', {"ESC": "DETACH"})
 		else:
-			viewport = lambda: OSMeshMap(active_index=self.selected_index, running_index=running_idx)
+			viewport = lambda: OSMeshMap(
+				active_index=self.selected_index,
+				running_index=running_idx,
+				nodes=self.nodes,
+			)
 			footer_actions = {"A/D": "NAV", "ENTER": "LAUNCH", "Q": "OFF"}
 
 		return {

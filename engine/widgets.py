@@ -158,36 +158,42 @@ class OSMeshConnector(WindfallElement):
 		return f"[{style}]{self.char}[/]"
 
 class OSMeshMap(WindfallElement):
-	def __init__(self, active_index=0, running_index=None):
+	def __init__(self, active_index=0, running_index=None, nodes=None):
 		super().__init__(title="NEURAL MESH")
 		self.active_index = active_index
 		self.running_index = running_index
+		self.nodes = nodes or []
 
 	def __rich__(self):
 		grid = Table.grid(expand=True, padding=1)
-		grid.add_column(justify="center", ratio=1)
-		grid.add_column(justify="center", ratio=12) # Connector col
-		grid.add_column(justify="center", ratio=1)
 
-		# 🔱 Determine states for each card
-		weather = OSCard(
-			"STRATOS", 
-			icon=self.icons.TEMP,
-			is_focused=(self.active_index == 0),
-			is_running=(self.running_index == 0)
-		)
-		
-		hub = OSCard(
-			"CORE", 
-			icon=self.icons.HUB,
-			is_focused=(self.active_index == 1),
-			is_running=(self.running_index == 1)
-		)
-		
-		# The dynamic connector from our previous logic
-		connector = "[cyan]━━━━[/]" if (self.active_index < 2) else "[dim]━━━━[/]"
-		grid.add_row(weather, connector, hub)
+		if not self.nodes:
+			grid.add_column(justify="center")
+			grid.add_row("[dim]No nodes detected.[/]")
+			return self.wrap(grid)
 
+		for _ in range(len(self.nodes) * 2 - 1):
+			grid.add_column(justify="center", ratio=1 if _ % 2 else 12)
+
+		row = []
+		for index, node in enumerate(self.nodes):
+			if index > 0:
+				active_connector = self.active_index in (index - 1, index)
+				style = self.theme.primary if active_connector else self.theme.dim
+				row.append(f"[{style}]━━━━[/]")
+
+			label = node.get("name", node.get("id", "NODE")).upper()
+			icon = self.icons.TEMP if "stratos" in label.lower() else self.icons.HUB
+			row.append(
+				OSCard(
+					label,
+					icon=icon,
+					is_focused=(self.active_index == index),
+					is_running=(self.running_index == index),
+				)
+			)
+
+		grid.add_row(*row)
 		return self.wrap(grid)
 
 class OSNodeInspector(WindfallElement):

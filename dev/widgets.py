@@ -73,12 +73,16 @@ class ForgeDockerTelemetry(ForgeWidgetBase):
 class ForgeHeader(ForgeWidgetBase):
 	"""🔱 THE HEADER: Self-contained telemetry, no external data pushing required."""
 
-	def __init__(self, docker_engine=None, context_name=None, **kwargs):
+	def __init__(
+		self, docker_engine=None, context_name=None, title=None, version=None, **kwargs
+	):
 		super().__init__()
 		self.id = ForgeIdentity()
 		self.telemetry = ForgeDockerTelemetry()
 		self.docker_engine = docker_engine
-		self.context_name = context_name
+		self.context_name = context_name or "DEVELOPER_CORE"
+		self.title = title or "VEMBER OS"
+		self.version = version or ""
 
 	def __rich__(self):
 		T = VemberAssets.THEME
@@ -91,7 +95,10 @@ class ForgeHeader(ForgeWidgetBase):
 
 		# 2. Build segments individually to prevent "Color Bleed"
 		# We define each part with its own explicit tag.
-		brand = f"[bold {T.primary}]VEMBER OS[/]"
+		brand_label = self.title
+		if self.version:
+			brand_label = f"{self.title} {self.version}"
+		brand = f"[bold {T.primary}]{brand_label}[/]"
 		separator = "[dim]|[/]"
 		hub_label = f"[bold white]vember_hub:[/]"
 		# This #00FFFF tag only affects the 'size' variable now
