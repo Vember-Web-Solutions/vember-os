@@ -84,8 +84,8 @@ class ThermalNode:
 
 		# Build the Viewport content
 		content = Group(
-			self.cpu_bar,
-			self.temp_bar,
+			self.cpu_load,
+			self.temp_viz,
 			"",
 			self.fan_viz
 		)
