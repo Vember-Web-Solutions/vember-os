@@ -4,6 +4,7 @@ This branch intentionally strips the fragile runtime and UI layer back to a simp
 working interactive form before we re-introduce the richer presentation layer.
 """
 
+import sys
 from dataclasses import dataclass
 
 from rich.align import Align
@@ -78,7 +79,22 @@ def collect_form() -> VemberConfig:
     )
 
 
-def render_shell(config: VemberConfig) -> None:
+def build_route_panel(route_name: str, config: VemberConfig) -> Panel:
+    route_content = {
+        "Bootstrap": "Bootstrap configuration is active.\nProject can be initialized and validated.",
+        "Runtime": "Runtime layer is ready for rebuild.\nFocus on stable startup and screen state.",
+        "Docker": "Docker orchestration is enabled.\nThe project can be built and launched in containers.",
+        "Settings": "Settings are available for shell defaults.\nProject metadata is already loaded.",
+    }
+    return Panel(
+        route_content.get(route_name, "System ready."),
+        title=f"{route_name.upper()}",
+        border_style="cyan",
+        padding=(1, 2),
+    )
+
+
+def render_shell(config: VemberConfig, selected_index: int = 0, route_name: str | None = None) -> None:
     console = Console()
     layout = Layout(name="root")
     layout.split_column(
@@ -96,8 +112,19 @@ def render_shell(config: VemberConfig) -> None:
         )
     )
 
+    menu_items = [
+        "Bootstrap",
+        "Runtime",
+        "Docker",
+        "Settings",
+    ]
+    menu_lines = []
+    for idx, item in enumerate(menu_items):
+        prefix = "▶" if idx == selected_index else " "
+        menu_lines.append(f"[bold cyan]{prefix}[/] {idx + 1}. {item}")
+
     menu_panel = Panel(
-        "[bold]1.[/] Bootstrap\n[bold]2.[/] Runtime\n[bold]3.[/] Docker\n[bold]4.[/] Settings",
+        "\n".join(menu_lines),
         title="MAIN MENU",
         border_style="cyan",
         padding=(1, 2),
@@ -110,19 +137,22 @@ def render_shell(config: VemberConfig) -> None:
         padding=(1, 2),
     )
 
-    body_group = Align.center(
-        Panel(
-            "\n".join(
-                [
-                    "[bold cyan]VEMBER OS[/] base shell is stable.",
-                    "The form layer is working and the visual shell is loading cleanly.",
-                ]
-            ),
-            title="READY",
-            border_style="cyan",
-            padding=(1, 2),
+    if route_name is None:
+        body_panel = Align.center(
+            Panel(
+                "\n".join(
+                    [
+                        "[bold cyan]VEMBER OS[/] base shell is stable.",
+                        "The form layer is working and the visual shell is loading cleanly.",
+                    ]
+                ),
+                title="READY",
+                border_style="cyan",
+                padding=(1, 2),
+            )
         )
-    )
+    else:
+        body_panel = build_route_panel(route_name, config)
 
     layout["body"].update(
         Group(
@@ -130,7 +160,7 @@ def render_shell(config: VemberConfig) -> None:
             "",
             menu_panel,
             "",
-            body_group,
+            body_panel,
         )
     )
 
@@ -143,11 +173,38 @@ def render_shell(config: VemberConfig) -> None:
     console.print(layout)
 
 
+def interactive_shell(config: VemberConfig) -> None:
+    selected_index = 0
+    current_route = None
+    while True:
+        print("\n" * 2)
+        render_shell(config, selected_index=selected_index, route_name=current_route)
+        key = input("Choose a menu item [1-4, q to quit]: ").strip().lower()
+        if key in {"q", "quit", "exit"}:
+            print("Exiting VEMBER OS shell.")
+            return
+        if key in {"1", "2", "3", "4"}:
+            selected_index = int(key) - 1
+            current_route = ["Bootstrap", "Runtime", "Docker", "Settings"][selected_index]
+            continue
+        if key in {"w", "up", "8"}:
+            selected_index = (selected_index - 1) % 4
+            current_route = ["Bootstrap", "Runtime", "Docker", "Settings"][selected_index]
+            continue
+        if key in {"s", "down", "2"}:
+            selected_index = (selected_index + 1) % 4
+            current_route = ["Bootstrap", "Runtime", "Docker", "Settings"][selected_index]
+            continue
+        if key in {"b", "back"}:
+            current_route = None
+            continue
+
+
 def main() -> VemberConfig:
     config = collect_form()
     print("\nConfiguration accepted:\n")
     print(config.summary())
-    render_shell(config)
+    interactive_shell(config)
     return config
 
 
