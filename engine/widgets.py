@@ -55,9 +55,9 @@ class OSHeader(WindfallElement):
 		grid.add_column(justify="center", ratio=2)
 		grid.add_column(justify="right", ratio=1)
 
-		# FIX: Changed 'active_theme' to 'self.theme'
+		# Stable, readable signal naming for the base shell
 		stats = f"[{self.theme.primary}]CPU:[/] {self.cpu:>3.0f}% [{self.theme.secondary}]RAM:[/] {self.ram:>3.0f}%"
-		title = f"[bold {self.theme.primary}]🔱 VEMBER-OS[/]"
+		title = f"[bold {self.theme.primary}]🔱 VEMBER OS[/]"
 		clock = datetime.now().strftime("%I:%M:%S %p")
 
 		grid.add_row(stats, title, clock)

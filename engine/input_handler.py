@@ -22,43 +22,48 @@ class KeyListener:
 	def __init__(self):
 		self.input_queue = queue.Queue()
 		self.running = True
-		self.fd = sys.stdin.fileno()
-		self.old_settings = termios.tcgetattr(self.fd)
-		
+		self.fd = None
+		self.old_settings = None
+		self._tty_available = False
+
+		try:
+			self.fd = sys.stdin.fileno()
+			self.old_settings = termios.tcgetattr(self.fd)
+			self._tty_available = sys.stdin.isatty()
+		except (AttributeError, OSError, termios.error):
+			self.fd = None
+			self.old_settings = None
+			self._tty_available = False
+
 		self.thread = threading.Thread(target=self._listener, daemon=True)
 		self.thread.start()
 
 	def _listener(self):
 		try:
-			# 🔱 Add a check to see if we are in an interactive terminal
-			if sys.stdin.isatty():
+			if self._tty_available and self.fd is not None:
 				tty.setcbreak(self.fd)
-			
+
 			while self.running:
-				# Polling with select prevents the thread from blocking
+				if not self._tty_available:
+					break
 				r, _, _ = select.select([sys.stdin], [], [], 0.1)
 				if r:
 					char = sys.stdin.read(1)
-					# ... (rest of your arrow handling logic) ...
 					self.input_queue.put(char)
 		except Exception as e:
-			# 🔱 If it fails, don't crash the OS, just log it
 			print(f"🔱 INPUT_KERNEL_ERROR: {e}")
 		finally:
-			if sys.stdin.isatty():
+			if self._tty_available and self.fd is not None and self.old_settings is not None:
 				termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
 
 	def stop(self):
+		"""Restores terminal to standard mode when a TTY is active."""
 		self.running = False
-		termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
+		if self._tty_available and self.fd is not None and self.old_settings is not None:
+			termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
 
 	def get_key(self):
 		try:
 			return self.input_queue.get_nowait()
 		except queue.Empty:
 			return None
-
-	def stop(self):
-		"""Restores terminal to standard mode."""
-		self.running = False
-		termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)

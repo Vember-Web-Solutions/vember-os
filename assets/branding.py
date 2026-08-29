@@ -25,7 +25,9 @@ class VemberTheme:
     dim: str
     cursor: str
     selection: str
+    border_action: str = "#00f2ff"
     bg: str = "#000000"
+    name: str = "ember"
 
 
 class VemberAssets:
@@ -39,7 +41,16 @@ class VemberAssets:
         dim="#444444",
         cursor="#ffff00",  # Example: Electric Yellow
         selection="#ffffff",  # Example: Pure White
+        border_action="#00f2ff",
+        name="ember",
     )
+    ACTIVE_THEME = THEME
+
+    @classmethod
+    def apply_theme(cls, name: str):
+        cls.ACTIVE_THEME = cls.THEME
+        cls.ACTIVE_THEME.name = name
+        return cls.ACTIVE_THEME
 
     # 🖼️ ICONS (Universal Registry)
     class Icons:

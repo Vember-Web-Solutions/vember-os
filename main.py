@@ -1,110 +1,155 @@
-"""
-🔱 VEMBER-OS: MAIN
-Metadata: Enter summary of MAIN functionality here.
-"""
-"""
-🔱 VEMBER OS
-"""
-"""
-🔱 VEMBER-OS: KERNEL
-Central execution engine. Orchestrates the dashboard lifecycle, 
-asynchronous telemetry streaming, and the input kernel.
+"""VEMBER OS form-first bootstrap.
+
+This branch intentionally strips the fragile runtime and UI layer back to a simple,
+working interactive form before we re-introduce the richer presentation layer.
 """
 
-import asyncio
-import os
-import sys
-import queue
-from rich.live import Live
-from rich.console import Console
+from dataclasses import dataclass
 
-# Internal Engine Imports
-from engine.input_handler import KeyListener
-from engine.dashboards import MainDashboard
-from engine.core import NodeScanner, NodeRunner
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from rich.align import Align
+from rich.console import Console, Group
+from rich.layout import Layout
+from rich.panel import Panel
 
 
-class VemberKernel:
-	def __init__(self):
-		self.console = Console()
-		self.dash = MainDashboard()
-		self.keyboard = KeyListener()
-		self.refresh_rate = 0.05
+@dataclass
+class VemberConfig:
+    project_name: str
+    environment: str
+    docker_enabled: bool
+    ui_mode: str
+    description: str
 
-	async def startup(self):
-		# 🔱 THE FIX: We must 'await' the async scan
-		self.dash.nodes = await self.dash.scanner.scan()
+    def summary(self) -> str:
+        return (
+            f"Project: {self.project_name}\n"
+            f"Environment: {self.environment}\n"
+            f"Docker: {'enabled' if self.docker_enabled else 'disabled'}\n"
+            f"UI mode: {self.ui_mode}\n"
+            f"Description: {self.description}"
+        )
 
-		if not self.dash.nodes:
-			self.dash.trigger_toast("WARNING: NO NODES DETECTED", duration=100)
-			self.dash.nodes = [{"name": "OFFLINE", "path": "", "controls": {}}]
 
-	def _update_telemetry(self):
-		# Keep this sync for now unless get_latest_output becomes a coroutine
-		new_data = self.dash.runner.get_latest_output()
-		if not new_data or not new_data.strip():
-			return
+def _ask(prompt: str, default: str | None = None, *, allow_empty: bool = False) -> str:
+    suffix = f" [{default}]" if default is not None else ""
+    while True:
+        value = input(f"{prompt}{suffix}: ").strip()
+        if value:
+            return value
+        if allow_empty:
+            return default or ""
+        if default is not None:
+            return default
+        print("This field is required.")
 
-		if "--- REFRESH ---" in new_data:
-			parts = new_data.split("--- REFRESH ---")
-			frame = parts[-2].strip()
-			if frame:
-				self.dash.output_buffer = frame
-		else:
-			self.dash.output_buffer += new_data
 
-	async def run(self):
-		# 🔱 Startup is now awaited
-		await self.startup()
+def _ask_bool(prompt: str, default: bool = True) -> bool:
+    default_text = "Y/n" if default else "y/N"
+    while True:
+        value = input(f"{prompt} [{default_text}]: ").strip().lower()
+        if not value:
+            return default
+        if value in {"y", "yes"}:
+            return True
+        if value in {"n", "no"}:
+            return False
+        print("Please answer yes or no.")
 
-		try:
-			with self.console.screen():
-				layout_map = self.dash.get_layout_map()
-				frame = self.dash.windfall.compose(layout_map)
 
-				with Live(
-					frame, console=self.console, screen=True, auto_refresh=False
-				) as live:
-					while self.dash.running:
-						# 1. Input Handoff
-						try:
-							key = self.keyboard.input_queue.get_nowait()
-							self.dash.handle_input(key)
-						except queue.Empty:
-							pass
+def collect_form() -> VemberConfig:
+    print("\nVEMBER OS bootstrap form\n")
 
-						# 2. Telemetry Bridge
-						self._update_telemetry()
+    project_name = _ask("Project name", default="vember-os")
+    environment = _ask("Environment", default="dev")
+    docker_enabled = _ask_bool("Enable Docker build support", default=True)
+    ui_mode = _ask("UI mode", default="form-first")
+    description = _ask(
+        "Short description",
+        default="Minimal shell for a clean rebuild",
+        allow_empty=True,
+    )
 
-						# 3. Render
-						current_map = self.dash.get_layout_map()
-						live.update(
-							self.dash.windfall.compose(
-								current_map, width=self.console.width
-							)
-						)
-						live.refresh()
+    return VemberConfig(
+        project_name=project_name,
+        environment=environment,
+        docker_enabled=docker_enabled,
+        ui_mode=ui_mode,
+        description=description,
+    )
 
-						# 🔱 Use async sleep to yield control to the event loop
-						await asyncio.sleep(self.refresh_rate)
 
-		except KeyboardInterrupt:
-			pass
-		finally:
-			self.cleanup()
+def render_shell(config: VemberConfig) -> None:
+    console = Console()
+    layout = Layout(name="root")
+    layout.split_column(
+        Layout(name="header", size=3),
+        Layout(name="body"),
+        Layout(name="footer", size=3),
+    )
 
-	def cleanup(self):
-		self.keyboard.stop()
-		# If your new NodeRunner has a shutdown method, call it here
-		if hasattr(self.dash.runner, "shutdown"):
-			self.dash.runner.shutdown()
-		else:
-			self.dash.runner.stop()
+    layout["header"].update(
+        Panel(
+            "VEMBER OS",
+            style="bold cyan",
+            title="core",
+            subtitle="stable build",
+        )
+    )
+
+    menu_panel = Panel(
+        "[bold]1.[/] Bootstrap\n[bold]2.[/] Runtime\n[bold]3.[/] Docker\n[bold]4.[/] Settings",
+        title="MAIN MENU",
+        border_style="cyan",
+        padding=(1, 2),
+    )
+
+    status_panel = Panel(
+        "Bootstrap shell ready\nProject ready for build orchestration",
+        title="SYSTEM STATUS",
+        border_style="green",
+        padding=(1, 2),
+    )
+
+    body_group = Align.center(
+        Panel(
+            "\n".join(
+                [
+                    "[bold cyan]VEMBER OS[/] base shell is stable.",
+                    "The form layer is working and the visual shell is loading cleanly.",
+                ]
+            ),
+            title="READY",
+            border_style="cyan",
+            padding=(1, 2),
+        )
+    )
+
+    layout["body"].update(
+        Group(
+            status_panel,
+            "",
+            menu_panel,
+            "",
+            body_group,
+        )
+    )
+
+    layout["footer"].update(
+        Panel(
+            f"Project: {config.project_name} | Mode: {config.ui_mode} | Docker: {'enabled' if config.docker_enabled else 'disabled'}",
+            style="green",
+        )
+    )
+    console.print(layout)
+
+
+def main() -> VemberConfig:
+    config = collect_form()
+    print("\nConfiguration accepted:\n")
+    print(config.summary())
+    render_shell(config)
+    return config
 
 
 if __name__ == "__main__":
-	kernel = VemberKernel()
-	# 🔱 Start the OS inside the Asyncio Event Loop
-	asyncio.run(kernel.run())
+    main()

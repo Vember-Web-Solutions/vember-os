@@ -73,31 +73,28 @@ class ForgeDockerTelemetry(ForgeWidgetBase):
 class ForgeHeader(ForgeWidgetBase):
 	"""🔱 THE HEADER: Self-contained telemetry, no external data pushing required."""
 
-	def __init__(self, docker_engine=None, context_name=None, **kwargs):
+	def __init__(self, docker_engine=None, context_name=None, title="VEMBER OS", version="v1.0.6-stable", **kwargs):
 		super().__init__()
 		self.id = ForgeIdentity()
 		self.telemetry = ForgeDockerTelemetry()
 		self.docker_engine = docker_engine
 		self.context_name = context_name
+		self.title = title
+		self.version = version
 
 	def __rich__(self):
 		T = VemberAssets.THEME
 
-		# 1. Gather Data
 		size = (
 			self.docker_engine.get_container_size() if self.docker_engine else "OFFLINE"
 		)
 		time_str = datetime.now().strftime("%I:%M:%S %p %Z")
 
-		# 2. Build segments individually to prevent "Color Bleed"
-		# We define each part with its own explicit tag.
-		brand = f"[bold {T.primary}]VEMBER OS[/]"
+		brand = f"[bold {T.primary}]{self.title}[/]"
 		separator = "[dim]|[/]"
 		hub_label = f"[bold white]vember_hub:[/]"
-		# This #00FFFF tag only affects the 'size' variable now
 		size_val = f"[bold #00FFFF]{size}[/]"
 
-		# 3. Assemble without a parent color tag
 		brand_block = Align.center(f"{brand} {separator} {hub_label} {size_val}")
 
 		grid = Table.grid(expand=True, padding=(0, 2))
@@ -106,7 +103,6 @@ class ForgeHeader(ForgeWidgetBase):
 		grid.add_column(justify="right", ratio=1)
 
 		grid.add_row(self.id, brand_block, f"[bold {T.primary}]{time_str}[/]")
-
 		return Panel(grid, box=box.SIMPLE, height=4, padding=(0, 1))
 
 

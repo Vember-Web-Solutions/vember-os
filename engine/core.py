@@ -11,23 +11,13 @@ Sovereign components for Async Discovery and Parallel Execution.
 """
 
 import ast
-import asyncio
+import os
+import queue
+import signal
 import subprocess
+import threading
 from pathlib import Path
-from concurrent.futures import ProcessPoolExecutor
-from typing import List, Dict, Any
-
-
-# --- GLOBAL WORKER (Required for Multiprocessing Pickling) ---
-def _execute_node_worker(path: str) -> str:
-	"""Isolated worker function for ProcessPoolExecutor."""
-	try:
-		result = subprocess.run(
-			["python", path], capture_output=True, text=True, timeout=30
-		)
-		return result.stdout if result.returncode == 0 else result.stderr
-	except Exception as e:
-		return f"Error: {str(e)}"
+from typing import List, Dict
 
 
 # --- SOVEREIGN COMPONENTS ---
@@ -36,37 +26,90 @@ def _execute_node_worker(path: str) -> str:
 class NodeScanner:
 	"""High-speed AST-based metadata ingestion."""
 
-	async def scan(self, directory: str = "nodes") -> List[Dict]:
+	def scan(self, directory: str = "nodes") -> List[Dict]:
 		path = Path(directory)
 		if not path.is_dir():
 			return []
-		tasks = [self._process_file(f) for f in path.glob("*.py")]
-		return [res for res in await asyncio.gather(*tasks) if res]
+		items = []
+		for file_path in sorted(path.glob("*.py")):
+			metadata = self._process_file(file_path)
+			if metadata:
+				items.append(metadata)
+		return items
 
-	async def _process_file(self, file_path: Path) -> Dict:
+	def _process_file(self, file_path: Path) -> Dict:
 		"""Reads and parses file metadata without execution."""
-		content = await asyncio.to_thread(file_path.read_text, encoding="utf-8")
-		tree = ast.parse(content)
-		return {
-			"id": file_path.stem,
-			"description": ast.get_docstring(tree) or "No data.",
-			"path": str(file_path),
-		}
+		try:
+			content = file_path.read_text(encoding="utf-8")
+			tree = ast.parse(content)
+			return {
+				"id": file_path.stem,
+				"name": file_path.stem.replace("_", " ").title(),
+				"description": ast.get_docstring(tree) or "No data.",
+				"path": str(file_path),
+				"controls": {"ESC": "BACK"},
+			}
+		except Exception:
+			return {}
+
+	async def scan_async(self, directory: str = "nodes") -> List[Dict]:
+		return self.scan(directory)
 
 
 class NodeRunner:
-	"""Isolated parallel execution engine."""
+	"""Simple process runner used by the dashboard lifecycle."""
 
-	def __init__(self, max_workers: int = 4):
-		self.executor = ProcessPoolExecutor(max_workers=max_workers)
+	def __init__(self):
+		self.output_queue = queue.Queue()
+		self.is_running = False
+		self.process = None
 
-	async def run_batch(self, paths: List[str]):
-		"""Dispatches paths to the process pool asynchronously."""
-		loop = asyncio.get_running_loop()
-		tasks = [
-			loop.run_in_executor(self.executor, _execute_node_worker, p) for p in paths
-		]
-		return await asyncio.gather(*tasks)
+	def execute(self, node_path):
+		if self.is_running:
+			return
+
+		self.is_running = True
+
+		def run():
+			try:
+				self.process = subprocess.Popen(
+					["python3", "-u", node_path],
+					stdout=subprocess.PIPE,
+					stderr=subprocess.STDOUT,
+					text=True,
+					bufsize=1,
+					preexec_fn=os.setsid,
+				)
+				if self.process.stdout:
+					for line in iter(self.process.stdout.readline, ""):
+						self.output_queue.put(line)
+				self.process.wait()
+			except Exception as e:
+				self.output_queue.put(f"[bold red]Execution Error:[/] {str(e)}\n")
+			finally:
+				self.is_running = False
+				self.process = None
+
+		thread = threading.Thread(target=run, daemon=True)
+		thread.start()
+
+	def stop(self):
+		if self.process:
+			try:
+				os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+			except Exception:
+				self.process.terminate()
+			self.is_running = False
+			self.process = None
+
+	def get_latest_output(self):
+		out = []
+		while not self.output_queue.empty():
+			try:
+				out.append(self.output_queue.get_nowait())
+			except queue.Empty:
+				break
+		return "".join(out)
 
 	def shutdown(self):
-		self.executor.shutdown(wait=True)
+		self.stop()

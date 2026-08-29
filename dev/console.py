@@ -34,7 +34,11 @@ from rich.table import Table
 from rich.align import Align
 from rich.text import Text
 from rich import box
-from pynput import keyboard
+
+try:
+	from pynput import keyboard
+except ImportError:  # pragma: no cover - optional dev-only dependency
+	keyboard = None
 
 # Ensure core workspace package paths map cleanly
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -115,9 +119,11 @@ class VemberConsole:
 		)
 		self.footer = ForgeFooter()
 
-		# Start the keyboard listener as the Host
-		self.listener = keyboard.Listener(on_press=self.on_press)
-		self.listener.start()
+		# Start the keyboard listener as the Host when pynput is available.
+		self.listener = None
+		if keyboard is not None:
+			self.listener = keyboard.Listener(on_press=self.on_press)
+			self.listener.start()
 
 	def on_press(self, key):
 		# Global input handling for the OS
@@ -159,28 +165,45 @@ class VemberConsole:
 			)
 
 	def _make_layout(self):
-		"""
-		🔱 ASSEMBLE_LAYOUT: The central nervous system of the UI frame.
-		Uses a rigid Layout grid to prevent screen overflow (doubling)
-		and lock the focus node to the true vertical center.
-		"""
+		"""Create the root layout for the terminal UI."""
 		layout = Layout(name="root")
-
-		# split() without 'column' or 'row' defaults to stacking vertically
 		layout.split(
 			Layout(name="header", size=5),
 			Layout(name="body"),
-			Layout(name="footer", size=5)
+			Layout(name="footer", size=5),
 		)
 		return layout
 
+	def _build_frame(self):
+		if not getattr(self.footer, "current_cluster_actions", None):
+			self.footer.current_cluster_actions = [
+				("UP/DN", "NAVIGATE"),
+				("ENTER", "IGNITE"),
+				("B", "BUILD_DOCKER"),
+				("T", "THEME_SWAP"),
+				("BKSP", "BACK/EXIT"),
+			]
+		header = ForgeHeader(
+			docker_engine=self.docker_engine,
+			context_name="DEVELOPER_CORE",
+			title="DEVELOPER CONSOLE",
+			version="v1.0.6-stable",
+		)
+		body = self.view_container.compose_view(self, self.current_scene)
+		footer = self.footer
+		return Group(header, body or Text(""), footer)
+
 	def run(self):
 		self.master_layout = self._make_layout()
-		with Live(self.master_layout, refresh_per_second=20, screen=True) as live:
+		with Live(
+			self._build_frame(),
+			console=self.console,
+			refresh_per_second=20,
+			auto_refresh=True,
+			transient=False,
+		) as live:
 			while not self.shutdown_flag:
-				# 3. Update Display
-				self.master_layout['header'].update(ForgeHeader(...))
-				self.master_layout['body'].update(self.view_container.compose_view(self, self.current_scene))
+				live.update(self._build_frame())
 				time.sleep(0.05)
 
 	def ignite_module_contract(self):

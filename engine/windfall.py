@@ -52,44 +52,34 @@ class Windfall:
 		self.manager = SceneManager(self)
 
 	def _setup_responsive_layout(self, width: int):
-		"""Configures the layout skeleton based on terminal width."""
-		# Reset the base layout
-		self.layout = Layout()
-
-		# 1. Vertical Split
+		"""Configures a single stable shell for the main OS frame."""
+		self.layout = Layout(name="root")
 		self.layout.split_column(
 			Layout(name="header", size=3),
 			Layout(name="body"),
-			Layout(name="footer", size=3)
+			Layout(name="footer", size=3),
 		)
 
-		# 2. Horizontal Body Split (Responsive logic)
 		if width > 110:
 			self.layout["body"].split_row(
 				Layout(name="viewport", ratio=3),
-				Layout(name="aside", ratio=1)
+				Layout(name="aside", ratio=1),
 			)
 		else:
-			# Purge 'aside' for small screens to prevent clipping
-			self.layout["body"].split_row(
-				Layout(name="viewport")
-			)
+			self.layout["body"].split_row(Layout(name="viewport"))
 
 	def compose(self, layout_map, width=120):
-		"""🔱 THE INJECTOR: Rebuilds layout and injects widgets."""
+		"""Build a fresh render frame and inject widgets into named slots."""
 		self._setup_responsive_layout(width)
 
 		for slot_name, factory in layout_map.items():
 			try:
-				# Access the named slot from the newly built layout
 				target_layout = self.layout[slot_name]
 				content = factory() if callable(factory) else factory
 				target_layout.update(content)
-			except (KeyError, AttributeError):
-				# This is why the responsive purge works: 
-				# if 'aside' doesn't exist in the layout, we just skip it.
+			except (KeyError, AttributeError, TypeError):
 				continue
-				
+
 		return self.layout
 
 	def get_renderable(self):
